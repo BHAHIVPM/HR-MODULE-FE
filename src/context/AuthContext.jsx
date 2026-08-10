@@ -1,5 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import authService from '../features/auth/services/authService';
+// (moved here from src/features/auth/context — every consumer already
+// imports this from '../context/AuthContext' / '../../../context/AuthContext')
 
 const AuthContext = createContext();
 
