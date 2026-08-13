@@ -5,11 +5,11 @@ const axiosClient = axios.create({
   withCredentials: true, // REQUIRED so the httpOnly cookie is sent/received
 });
 
-// If ANY call gets 401, force logout globally
+// If ANY call gets 401, force logout globally (skip during dev-auth testing)
 axiosClient.interceptors.response.use(
   (res) => res,
   (err) => {
-    if (err.response?.status === 401) {
+    if (err.response?.status === 401 && sessionStorage.getItem('hr-dev-auth') !== 'true') {
       window.location.href = '/login';
     }
     return Promise.reject(err);

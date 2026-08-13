@@ -1,10 +1,138 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  /* Core theme colors — user-configurable via ThemeContext */
+  --color-primary: #2f5dd1;
+  --color-secondary: #c9a24b;
+  --color-third: #0b1220;
+
+  /* Derived from core colors (overridden at runtime by ThemeProvider) */
+  --ink-900: var(--color-third);
+  --ink-800: #121a2c;
+  --ink-700: #1c2740;
+
+  --primary-600: var(--color-primary);
+  --primary-700: #24469e;
+  --primary-100: #e8edfb;
+
+  --accent-500: var(--color-secondary);
+  --accent-300: #ddc07f;
+
+  /* Neutrals */
+  --slate-900: #101828;
+  --slate-600: #475467;
+  --slate-500: #667085;
+  --slate-400: #98a2b3;
+  --slate-200: #e4e7ec;
+  --slate-100: #f2f4f7;
+  --slate-50: #f8fafc;
+  --white: #ffffff;
+
+  /* Semantic surfaces — light mode */
+  --surface-bg: #f8fafc;
+  --surface-panel: #ffffff;
+  --surface-muted: #f2f4f7;
+  --surface-card: #ffffff;
+  --surface-input: #f8fafc;
+  --surface-input-focus: #ffffff;
+
+  --text-primary: #101828;
+  --text-secondary: #475467;
+  --text-muted: #667085;
+  --text-inverse: #ffffff;
+
+  --border-default: #e4e7ec;
+  --border-subtle: #f2f4f7;
+
+  --header-bg: rgba(255, 255, 255, 0.92);
+  --header-border: #e4e7ec;
+  --header-text: #101828;
+  --header-btn-bg: #ffffff;
+  --header-btn-hover: #f2f4f7;
+  --header-border-hover: #98a2b3;
+  --header-mark-bg: #e8edfb;
+  --header-mark-border: #e8edfb;
+
+  /* Status */
+  --error-bg: #fef3f2;
+  --error-border: #fda29b;
+  --error-text: #b42318;
+  --success-bg: #ecfdf3;
+  --success-border: #a6f4c5;
+  --success-text: #027a48;
+  --success-500: #12b76a;
+
+  /* Type */
+  --font-display: 'Sora', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+
+  /* Elevation */
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+  --shadow-md: 0 4px 12px rgba(16, 24, 40, 0.08);
+  --shadow-lg: 0 12px 32px rgba(16, 24, 40, 0.12);
+}
+
+[data-theme='dark'] {
+  --slate-900: #f0f4f8;
+  --slate-600: #98a2b3;
+  --slate-500: #667085;
+  --slate-400: #475467;
+  --slate-200: rgba(255, 255, 255, 0.1);
+  --slate-100: rgba(255, 255, 255, 0.06);
+  --slate-50: #141c2b;
+  --white: #0d1117;
+
+  --primary-100: rgba(47, 93, 209, 0.18);
+
+  --surface-bg: #0a0f18;
+  --surface-panel: #121a2c;
+  --surface-muted: #1a2234;
+  --surface-card: #121a2c;
+  --surface-input: #1a2234;
+  --surface-input-focus: #1e2838;
+
+  --text-primary: #f0f4f8;
+  --text-secondary: #98a2b3;
+  --text-muted: #667085;
+  --text-inverse: #ffffff;
+
+  --border-default: rgba(255, 255, 255, 0.1);
+  --border-subtle: rgba(255, 255, 255, 0.06);
+
+  --header-bg: rgba(10, 15, 24, 0.92);
+  --header-border: rgba(255, 255, 255, 0.08);
+  --header-text: #f0f4f8;
+  --header-btn-bg: rgba(255, 255, 255, 0.06);
+  --header-btn-hover: rgba(255, 255, 255, 0.1);
+  --header-border-hover: rgba(255, 255, 255, 0.18);
+  --header-mark-bg: rgba(255, 255, 255, 0.08);
+  --header-mark-border: rgba(255, 255, 255, 0.12);
+
+  --error-bg: rgba(180, 35, 24, 0.12);
+  --error-border: rgba(253, 162, 155, 0.35);
+  --error-text: #fda29b;
+
+  --success-bg: rgba(2, 122, 72, 0.12);
+  --success-border: rgba(166, 244, 197, 0.25);
+  --success-text: #6ce9a6;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  background: var(--surface-bg);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 code {

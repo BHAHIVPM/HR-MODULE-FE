@@ -1,17 +1,22 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import authService from '../features/auth/services/authService';
-// (moved here from src/features/auth/context — every consumer already
-// imports this from '../context/AuthContext' / '../../../context/AuthContext')
 
 const AuthContext = createContext();
+export const DEV_AUTH_KEY = 'hr-dev-auth';
 
 export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [checking, setChecking] = useState(true); // true while verifying on app load
+  const [checking, setChecking] = useState(true);
 
   const checkAuth = async () => {
+    if (sessionStorage.getItem(DEV_AUTH_KEY) === 'true') {
+      setIsAuthenticated(true);
+      setChecking(false);
+      return;
+    }
+
     try {
-      await authService.aboutMe(); // succeeds only if cookie is valid
+      await authService.aboutMe();
       setIsAuthenticated(true);
     } catch {
       setIsAuthenticated(false);
@@ -25,7 +30,12 @@ export function AuthProvider({ children }) {
   }, []);
 
   const logout = async () => {
-    await authService.logout();
+    sessionStorage.removeItem(DEV_AUTH_KEY);
+    try {
+      await authService.logout();
+    } catch {
+      // ignore if dev session or backend unavailable
+    }
     setIsAuthenticated(false);
   };
 
