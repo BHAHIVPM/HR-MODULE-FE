@@ -31,9 +31,18 @@ function getSystemPreference() {
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
+export const THEME_PRESETS = [
+  { name: 'Default Blue', primary: '#2f5dd1', secondary: '#c9a24b', third: '#0b1220' },
+  { name: 'Emerald', primary: '#059669', secondary: '#d97706', third: '#064e3b' },
+  { name: 'Royal Purple', primary: '#7c3aed', secondary: '#ec4899', third: '#312e81' },
+  { name: 'Slate Teal', primary: '#0d9488', secondary: '#f59e0b', third: '#134e4a' },
+  { name: 'Crimson', primary: '#e11d48', secondary: '#3b82f6', third: '#881337' },
+];
+
 function applyThemeToDOM(colors, resolvedMode) {
   const root = document.documentElement;
   root.dataset.theme = resolvedMode;
+  root.style.colorScheme = resolvedMode;
 
   root.style.setProperty('--color-primary', colors.primary);
   root.style.setProperty('--color-secondary', colors.secondary);
@@ -108,6 +117,10 @@ export function ThemeProvider({ children }) {
     setColorModeState(mode);
   }, []);
 
+  const setThemeColors = useCallback((newColors) => {
+    setColors({ ...DEFAULT_THEME, ...newColors });
+  }, []);
+
   const resetTheme = useCallback(() => {
     setColors(DEFAULT_THEME);
     setColorModeState('system');
@@ -118,6 +131,7 @@ export function ThemeProvider({ children }) {
       value={{
         colors,
         updateColor,
+        setThemeColors,
         resetTheme,
         colorMode,
         setColorMode,

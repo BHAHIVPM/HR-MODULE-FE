@@ -1,26 +1,26 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme, THEME_PRESETS } from '../../context/ThemeContext';
 import './HeaderMenu.css';
 
-const COLOR_OPTIONS = [
-  { key: 'primary', label: 'Primary' },
-  { key: 'secondary', label: 'Secondary' },
-  { key: 'third', label: 'Third' },
+const COLOR_FIELDS = [
+  { key: 'primary', label: 'Primary Color' },
+  { key: 'secondary', label: 'Secondary Color' },
+  { key: 'third', label: 'Third Color' },
 ];
 
 const MODE_OPTIONS = [
-  { value: 'system', label: 'System', hint: 'Match browser' },
-  { value: 'light', label: 'Light' },
-  { value: 'dark', label: 'Dark' },
+  { value: 'system', label: 'System', hint: 'Match browser mode' },
+  { value: 'light', label: 'Light', hint: 'Light mode' },
+  { value: 'dark', label: 'Dark', hint: 'Dark mode' },
 ];
 
 function HeaderMenu() {
   const [open, setOpen] = useState(false);
   const menuRef = useRef(null);
   const { isAuthenticated, logout } = useAuth();
-  const { colors, updateColor, colorMode, setColorMode, resolvedMode } = useTheme();
+  const { colors, updateColor, setThemeColors, colorMode, setColorMode, resolvedMode, systemPreference } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -60,66 +60,66 @@ function HeaderMenu() {
     <div className="header-menu" ref={menuRef}>
       <button
         type="button"
-        className="header-menu-trigger"
+        className={`header-menu-trigger ${open ? 'header-menu-trigger-active' : ''}`}
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
         aria-haspopup="true"
-        aria-label="Open menu"
+        aria-label="Settings & theme menu"
       >
-        <MenuIcon />
+        <span className="header-menu-trigger-icon">
+          {resolvedMode === 'dark' ? <MoonIcon /> : <SunIcon />}
+        </span>
+        <span className="header-menu-dots">
+          <MenuIcon />
+        </span>
       </button>
 
       {open && (
         <div className="header-menu-dropdown" role="menu">
+          {/* Account Section */}
           <div className="header-menu-section">
             <span className="header-menu-section-label">Account</span>
             {isAuthenticated ? (
               <>
+                <div className="header-menu-user-badge">
+                  <div className="header-menu-user-avatar">
+                    <UserAvatarIcon />
+                  </div>
+                  <div className="header-menu-user-info">
+                    <span className="header-menu-user-name">Administrator</span>
+                    <span className="header-menu-user-status">Logged in</span>
+                  </div>
+                </div>
                 {location.pathname !== '/dashboard' && (
                   <Link to="/dashboard" className="header-menu-item" role="menuitem" onClick={() => setOpen(false)}>
                     <DashboardIcon />
-                    Dashboard
+                    <span>Dashboard</span>
                   </Link>
                 )}
-                <button type="button" className="header-menu-item" role="menuitem" onClick={handleLogout}>
+                <button type="button" className="header-menu-item header-menu-item-danger" role="menuitem" onClick={handleLogout}>
                   <LogoutIcon />
-                  Logout
+                  <span>Logout</span>
                 </button>
               </>
             ) : (
-              <button type="button" className="header-menu-item" role="menuitem" onClick={handleLogin}>
+              <button type="button" className="header-menu-item header-menu-item-primary" role="menuitem" onClick={handleLogin}>
                 <LoginIcon />
-                Login
+                <span>Login</span>
               </button>
             )}
           </div>
 
           <div className="header-menu-divider" />
 
+          {/* Color Mode / Appearance Section */}
           <div className="header-menu-section">
-            <span className="header-menu-section-label">Theme colors</span>
-            {COLOR_OPTIONS.map(({ key, label }) => (
-              <label key={key} className="header-menu-color-item" role="menuitem">
-                <span className="header-menu-color-label">{label}</span>
-                <input
-                  type="color"
-                  value={colors[key]}
-                  onChange={(e) => updateColor(key, e.target.value)}
-                  aria-label={`${label} color`}
-                />
-                <span className="header-menu-color-hex">{colors[key]}</span>
-              </label>
-            ))}
-          </div>
-
-          <div className="header-menu-divider" />
-
-          <div className="header-menu-section">
-            <span className="header-menu-section-label">
-              Appearance
-              <span className="header-menu-mode-badge">{resolvedMode}</span>
-            </span>
-            <div className="header-menu-mode-group" role="group" aria-label="Color mode">
+            <div className="header-menu-section-header">
+              <span className="header-menu-section-label">Theme Mode</span>
+              <span className="header-menu-mode-badge">
+                {colorMode === 'system' ? `Auto (${systemPreference})` : colorMode}
+              </span>
+            </div>
+            <div className="header-menu-mode-group" role="group" aria-label="Color mode options">
               {MODE_OPTIONS.map(({ value, label, hint }) => (
                 <button
                   key={value}
@@ -131,9 +131,59 @@ function HeaderMenu() {
                   {value === 'system' && <SystemIcon />}
                   {value === 'light' && <SunIcon />}
                   {value === 'dark' && <MoonIcon />}
-                  {label}
+                  <span>{label}</span>
                 </button>
               ))}
+            </div>
+          </div>
+
+          <div className="header-menu-divider" />
+
+          {/* Theme Colors Section */}
+          <div className="header-menu-section">
+            <span className="header-menu-section-label">Custom Theme Colors</span>
+            <div className="header-menu-colors-list">
+              {COLOR_FIELDS.map(({ key, label }) => (
+                <div key={key} className="header-menu-color-row">
+                  <div className="header-menu-color-info">
+                    <span
+                      className="header-menu-color-dot"
+                      style={{ backgroundColor: colors[key] }}
+                    />
+                    <span className="header-menu-color-title">{label}</span>
+                  </div>
+                  <div className="header-menu-color-picker-wrap">
+                    <input
+                      type="color"
+                      className="header-menu-color-input"
+                      value={colors[key]}
+                      onChange={(e) => updateColor(key, e.target.value)}
+                      aria-label={`${label} selector`}
+                    />
+                    <span className="header-menu-color-code">{colors[key]}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Color Presets */}
+            <div className="header-menu-presets-wrap">
+              <span className="header-menu-presets-title">Quick Palettes</span>
+              <div className="header-menu-presets-grid">
+                {THEME_PRESETS.map((preset) => (
+                  <button
+                    key={preset.name}
+                    type="button"
+                    className="header-menu-preset-btn"
+                    title={preset.name}
+                    onClick={() => setThemeColors({ primary: preset.primary, secondary: preset.secondary, third: preset.third })}
+                  >
+                    <span className="header-menu-preset-swatch" style={{ backgroundColor: preset.primary }} />
+                    <span className="header-menu-preset-swatch" style={{ backgroundColor: preset.secondary }} />
+                    <span className="header-menu-preset-swatch" style={{ backgroundColor: preset.third }} />
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -203,6 +253,15 @@ function MoonIcon() {
   return (
     <svg viewBox="0 0 20 20" width="14" height="14" fill="none" aria-hidden="true">
       <path d="M15.5 11.2a5.5 5.5 0 0 1-6.7-6.7 5.5 5.5 0 1 0 6.7 6.7Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function UserAvatarIcon() {
+  return (
+    <svg viewBox="0 0 20 20" width="16" height="16" fill="none" aria-hidden="true">
+      <path d="M10 10a3.25 3.25 0 1 0 0-6.5 3.25 3.25 0 0 0 0 6.5Z" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M3.5 17c1.2-3.4 4-5 6.5-5s5.3 1.6 6.5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
     </svg>
   );
 }

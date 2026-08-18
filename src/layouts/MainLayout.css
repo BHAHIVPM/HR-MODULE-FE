@@ -1,4 +1,5 @@
 .main-layout {
+<<<<<<< HEAD
   display: flex;
   min-height: 100vh;
   background: var(--surface-bg);
@@ -159,10 +160,108 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+=======
+  min-height: 100vh;
+  background-color: #f1f5f9;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-layout-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  height: 64px;
+  background: #0f172a;
+  color: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.main-layout-brand-section {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.main-layout-title {
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: -0.5px;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.main-layout-title-badge {
+  font-size: 11px;
+  font-weight: 600;
+  background: #3b82f6;
+  color: #ffffff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.main-layout-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.main-nav-link {
+  color: #94a3b8;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 14px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.main-nav-link:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.main-nav-link.active {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+  font-weight: 600;
+}
+
+.main-layout-user-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.main-layout-logout {
+  padding: 7px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  background: transparent;
+  color: #cbd5e1;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.main-layout-logout:hover {
+  background: #ef4444;
+  border-color: #ef4444;
+  color: #ffffff;
+>>>>>>> d0ebdba3f460d4c0c55afbe2346a4b9167f24491
 }
 
 .main-layout-content {
   flex: 1;
+<<<<<<< HEAD
   padding: 32px;
   overflow-y: auto;
 }
@@ -247,4 +346,11 @@
   .main-layout-content.page-enter {
     animation: none;
   }
+=======
+  padding: 28px;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+>>>>>>> d0ebdba3f460d4c0c55afbe2346a4b9167f24491
 }

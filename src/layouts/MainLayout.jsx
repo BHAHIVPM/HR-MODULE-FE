@@ -1,5 +1,11 @@
+<<<<<<< HEAD
 import { NavLink, useLocation, Outlet } from 'react-router-dom';
 import { useState } from 'react';
+=======
+import React from 'react';
+import { NavLink } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+>>>>>>> d0ebdba3f460d4c0c55afbe2346a4b9167f24491
 import { useSessionTimeout } from '../hooks/useSessionTimeout';
 import SessionWarningModal from '../components/SessionWarningModal/SessionWarningModal';
 import AppHeader from '../components/AppHeader/AppHeader';
@@ -33,6 +39,7 @@ function MainLayout() {
 
   return (
     <div className="main-layout">
+<<<<<<< HEAD
       <aside className="main-layout-sidebar">
         <div className="sidebar-brand">
           <div className="sidebar-mark">
@@ -42,6 +49,35 @@ function MainLayout() {
           </div>
           <span className="sidebar-title">HR Module</span>
         </div>
+=======
+      <header className="main-layout-header">
+        <div className="main-layout-brand-section">
+          <span className="main-layout-title">
+            HR Module <span className="main-layout-title-badge">Portal</span>
+          </span>
+          <nav className="main-layout-nav">
+            <NavLink
+              to="/dashboard"
+              className={({ isActive }) => `main-nav-link ${isActive ? 'active' : ''}`}
+            >
+              Dashboard
+            </NavLink>
+            <NavLink
+              to="/employees"
+              className={({ isActive }) => `main-nav-link ${isActive ? 'active' : ''}`}
+            >
+              Employees
+            </NavLink>
+          </nav>
+        </div>
+
+        <div className="main-layout-user-section">
+          <button className="main-layout-logout" onClick={logout}>
+            Logout
+          </button>
+        </div>
+      </header>
+>>>>>>> d0ebdba3f460d4c0c55afbe2346a4b9167f24491
 
         <nav className="sidebar-nav" aria-label="Main navigation">
           {NAV_ITEMS.map((item) =>
