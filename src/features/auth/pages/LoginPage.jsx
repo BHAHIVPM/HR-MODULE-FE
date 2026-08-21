@@ -5,8 +5,8 @@ import authService from '../services/authService';
 import { useAuth, DEV_AUTH_KEY } from '../../../context/AuthContext';
 import AppHeader from '../../../components/AppHeader/AppHeader';
 
-const DEV_USERNAME = 'admin';
-const DEV_PASSWORD = '123456789';
+const DEV_USERNAME = '100112345678';
+const DEV_PASSWORD = 'admin';
 
 function LoginPage() {
   const [error, setError] = useState(null);
@@ -26,7 +26,10 @@ function LoginPage() {
     setLoading(true);
     setError(null);
 
-    if (credentials.username === DEV_USERNAME && credentials.password === DEV_PASSWORD) {
+    const loginId = credentials.loginId || credentials.username;
+    const password = credentials.password;
+
+    if ((loginId === DEV_USERNAME || loginId === 'admin') && password === DEV_PASSWORD) {
       sessionStorage.setItem(DEV_AUTH_KEY, 'true');
       setIsAuthenticated(true);
       goToDashboard();
@@ -34,11 +37,12 @@ function LoginPage() {
     }
 
     try {
-      await authService.login(credentials);
+      await authService.login(loginId, password);
       setIsAuthenticated(true);
       goToDashboard();
-    } catch {
-      setError('Invalid username or password');
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Invalid 12-digit Login ID or password';
+      setError(msg);
       setLoading(false);
     }
   };
@@ -52,3 +56,4 @@ function LoginPage() {
 }
 
 export default LoginPage;
+

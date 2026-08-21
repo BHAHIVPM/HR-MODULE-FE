@@ -5,65 +5,53 @@ import axiosClient from '../../../api/axiosClient';
  */
 const employeeService = {
   /**
-   * Search employees by first or last name
-   * GET /employee/search?keyword={keyword}
+   * Save a new employee
+   * POST /employee/save
    */
-  searchByName: (keyword) => {
-    return axiosClient.get('/employee/search', {
-      params: { keyword },
-    });
+  save: (employeeData) => {
+    return axiosClient.post('/employee/save', employeeData);
   },
 
   /**
-   * Fetch direct reports of a manager
-   * GET /employee/manager/{managerId}
+   * Find employee by ID
+   * GET /employee/{employeeId}
    */
-  findByReportingManagerId: (managerId) => {
-    return axiosClient.get(`/employee/manager/${managerId}`);
+  findById: (employeeId) => {
+    return axiosClient.get(`/employee/${employeeId}`);
   },
 
   /**
-   * Check if employee code already exists
-   * GET /employee/exists/{employeeCode}
-   * Returns ResponseMessage<Boolean> (responseOutput: true/false)
+   * Find all active employees
+   * GET /employee/active
    */
-  checkCodeExists: (employeeCode) => {
-    return axiosClient.get(`/employee/exists/${encodeURIComponent(employeeCode)}`);
+  findAllActive: () => {
+    return axiosClient.get('/employee/active');
   },
 
   /**
-   * Soft delete (deactivate) an employee
-   * PATCH /employee/soft-delete/{employeeId}
+   * Find all employees (active and inactive)
+   * GET /employee/all
    */
-  softDelete: (employeeId) => {
-    return axiosClient.patch(`/employee/soft-delete/${employeeId}`);
+  findAll: () => {
+    return axiosClient.get('/employee/all');
   },
 
   /**
-   * Update employee status (ACTIVE, INACTIVE, RESIGNED, TERMINATED)
-   * PATCH /employee/{employeeId}/status?status={status}
+   * Update existing employee
+   * PUT /employee/update/{employeeId}
    */
-  updateStatus: (employeeId, status) => {
-    return axiosClient.patch(`/employee/${employeeId}/status`, null, {
-      params: { status },
-    });
+  update: (employeeId, updates) => {
+    return axiosClient.put(`/employee/update/${employeeId}`, updates);
   },
 
   /**
-   * Create a new employee
-   * POST /employee
+   * Delete employee by ID
+   * DELETE /employee/{employeeId}
    */
-  createEmployee: (employeeData) => {
-    return axiosClient.post('/employee', employeeData);
-  },
-
-  /**
-   * Update an existing employee
-   * PUT /employee/{employeeId}
-   */
-  updateEmployee: (employeeId, employeeData) => {
-    return axiosClient.put(`/employee/${employeeId}`, employeeData);
+  delete: (employeeId) => {
+    return axiosClient.delete(`/employee/${employeeId}`);
   },
 };
 
 export default employeeService;
+

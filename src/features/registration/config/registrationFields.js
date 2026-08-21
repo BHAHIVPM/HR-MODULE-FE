@@ -1,7 +1,7 @@
 export const userRegistrationFields = [
   {
     name: 'userId',
-    label: 'User ID',
+    label: 'User ID (Login ID)',
     type: 'text',
     required: true,
     maxLength: 12,
@@ -10,11 +10,11 @@ export const userRegistrationFields = [
     colSpan: 2,
   },
   {
-    name: 'userName',
-    label: 'Username',
+    name: 'name',
+    label: 'Full Name',
     type: 'text',
     required: true,
-    placeholder: 'Display name',
+    placeholder: 'User full name',
   },
   {
     name: 'userMail',
@@ -31,20 +31,14 @@ export const userRegistrationFields = [
     required: true,
     maxLength: 10,
     minLength: 10,
-    placeholder: '10-digit number',
-  },
-  {
-    name: 'password',
-    label: 'Password',
-    type: 'password',
-    required: true,
-    placeholder: 'Set login password',
+    placeholder: '10-digit mobile number',
   },
   {
     name: 'userType',
     label: 'User Type',
     type: 'select',
     required: true,
+    defaultValue: 'USER',
     options: [
       { value: 'ADMIN', label: 'Admin' },
       { value: 'EMPLOYEE', label: 'Employee' },
@@ -63,6 +57,7 @@ export const userRegistrationFields = [
     ],
   },
 ];
+
 
 export const employeeRegistrationFields = [
   {

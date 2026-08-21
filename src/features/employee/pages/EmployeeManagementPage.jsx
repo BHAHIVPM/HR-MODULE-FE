@@ -9,121 +9,74 @@ function EmployeeManagementPage() {
 
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [viewMode, setViewMode] = useState('active'); // 'active' or 'all'
   const [searchKeyword, setSearchKeyword] = useState('');
-  const [managerFilterId, setManagerFilterId] = useState('');
-  const [activeFilterType, setActiveFilterType] = useState('all'); // 'all', 'search', 'manager'
   
   const [showForm, setShowForm] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
 
-  // Initial load / search
+  // Initial load: fetches active employees via GET /employee/active (or all via /employee/all)
   const loadEmployees = useCallback(
-    async (keyword = '') => {
+    async (mode = viewMode) => {
       setLoading(true);
       try {
-        const response = await employeeService.searchByName(keyword);
-        // ResponseMessage shape: response.data.responseOutput
-        const list = response?.data?.responseOutput || [];
+        const response = mode === 'all'
+          ? await employeeService.findAll()
+          : await employeeService.findAllActive();
+        
+        const list = response?.data?.responseOutput || response?.data || [];
         setEmployees(Array.isArray(list) ? list : []);
-        setActiveFilterType(keyword ? 'search' : 'all');
       } catch (err) {
         showErrorPopup(err);
       } finally {
         setLoading(false);
       }
     },
-    [showErrorPopup]
+    [viewMode, showErrorPopup]
   );
 
   useEffect(() => {
-    loadEmployees('');
-  }, [loadEmployees]);
+    loadEmployees(viewMode);
+  }, [viewMode, loadEmployees]);
 
-  // Handle Search Input submit / keypress
-  const handleSearch = (e) => {
-    if (e) e.preventDefault();
-    setManagerFilterId('');
-    loadEmployees(searchKeyword.trim());
+  const handleToggleViewMode = (newMode) => {
+    setViewMode(newMode);
   };
 
-  // Handle Manager Direct Reports lookup: GET /employee/manager/{managerId}
-  const handleManagerLookup = async (e) => {
-    if (e) e.preventDefault();
-    if (!managerFilterId || isNaN(managerFilterId)) {
-      showErrorPopup({
-        title: 'Invalid Manager ID',
-        message: 'Please provide a valid numeric Manager ID.',
-      });
-      return;
-    }
-
-    setLoading(true);
-    setSearchKeyword('');
+  // Quick Status Update using PUT /employee/update/{employeeId}
+  const handleStatusChange = async (emp, newStatus) => {
     try {
-      const response = await employeeService.findByReportingManagerId(parseInt(managerFilterId, 10));
-      const team = response?.data?.responseOutput || [];
-      setEmployees(Array.isArray(team) ? team : []);
-      setActiveFilterType('manager');
-      showSuccess(response?.data?.message || 'Direct reports fetched successfully.', 'Team Filter');
-    } catch (err) {
-      showErrorPopup(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Reset filters
-  const handleResetFilters = () => {
-    setSearchKeyword('');
-    setManagerFilterId('');
-    loadEmployees('');
-  };
-
-  // Handle Quick Status Update: PATCH /employee/{employeeId}/status?status=...
-  const handleStatusChange = async (employeeId, newStatus) => {
-    try {
-      const response = await employeeService.updateStatus(employeeId, newStatus);
+      const updatedEmp = { ...emp, status: newStatus };
+      const response = await employeeService.update(emp.employeeId, updatedEmp);
       
-      // Update local state immediately
       setEmployees((prev) =>
-        prev.map((emp) => (emp.employeeId === employeeId ? { ...emp, status: newStatus } : emp))
+        prev.map((e) => (e.employeeId === emp.employeeId ? { ...e, status: newStatus } : e))
       );
 
-      // Top right slide-in success notification (1.5s)
       showSuccess(
         response?.data?.message || `Employee status updated to ${newStatus}`,
         'Status Updated'
       );
     } catch (err) {
-      // General error popup modal
       showErrorPopup(err);
     }
   };
 
-  // Handle Soft Delete: PATCH /employee/soft-delete/{employeeId}
-  const handleSoftDelete = async (employeeId, employeeName) => {
+  // Delete Employee using DELETE /employee/{employeeId}
+  const handleDelete = async (employeeId, employeeName) => {
     const confirm = window.confirm(
-      `Are you sure you want to deactivate ${employeeName || 'this employee'}?`
+      `Are you sure you want to delete ${employeeName || 'this employee'}?`
     );
     if (!confirm) return;
 
     try {
-      const response = await employeeService.softDelete(employeeId);
-      
-      // Update local status to INACTIVE
-      setEmployees((prev) =>
-        prev.map((emp) =>
-          emp.employeeId === employeeId ? { ...emp, status: 'INACTIVE' } : emp
-        )
-      );
-
-      // Top right slide-in success notification (1.5s)
+      const response = await employeeService.delete(employeeId);
       showSuccess(
-        response?.data?.message || 'Employee deactivated successfully.',
-        'Deactivation'
+        response?.data?.message || 'Employee deleted successfully.',
+        'Deleted'
       );
+      loadEmployees(viewMode);
     } catch (err) {
-      // General error popup modal
       showErrorPopup(err);
     }
   };
@@ -137,8 +90,7 @@ function EmployeeManagementPage() {
   const handleFormSuccess = () => {
     setShowForm(false);
     setSelectedEmployee(null);
-    // Reload list to refresh table
-    loadEmployees(searchKeyword);
+    loadEmployees(viewMode);
   };
 
   const handleFormCancel = () => {
@@ -146,13 +98,24 @@ function EmployeeManagementPage() {
     setSelectedEmployee(null);
   };
 
+  // Client-side search filter
+  const filteredEmployees = employees.filter((emp) => {
+    if (!searchKeyword) return true;
+    const kw = searchKeyword.toLowerCase();
+    const fullName = `${emp.firstName || ''} ${emp.lastName || ''}`.toLowerCase();
+    const code = (emp.employeeCode || '').toLowerCase();
+    const email = (emp.email || '').toLowerCase();
+    const dept = (emp.department || '').toLowerCase();
+    return fullName.includes(kw) || code.includes(kw) || email.includes(kw) || dept.includes(kw);
+  });
+
   return (
     <div className="employee-page-container">
       {/* Top Header */}
       <div className="employee-page-header">
         <div className="employee-page-title-group">
-          <h1>Employee Management</h1>
-          <p>Search, manage team structures, register new hires, and update status</p>
+          <h1>Employee Directory</h1>
+          <p>List of active employee records fetched directly from the database</p>
         </div>
 
         <div className="employee-header-actions">
@@ -184,8 +147,44 @@ function EmployeeManagementPage() {
 
       {/* Filter / Search Toolbar */}
       <div className="employee-toolbar">
-        {/* Search by Name */}
-        <form className="search-box" onSubmit={handleSearch}>
+        {/* Filter Toggle: Active vs All */}
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <button
+            type="button"
+            className={`btn-filter-action ${viewMode === 'active' ? 'active' : ''}`}
+            onClick={() => handleToggleViewMode('active')}
+            style={{
+              backgroundColor: viewMode === 'active' ? '#3b82f6' : 'transparent',
+              color: '#fff',
+              border: '1px solid #3b82f6',
+              padding: '6px 14px',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontWeight: '600'
+            }}
+          >
+            Active Employees Only
+          </button>
+          <button
+            type="button"
+            className={`btn-filter-action ${viewMode === 'all' ? 'active' : ''}`}
+            onClick={() => handleToggleViewMode('all')}
+            style={{
+              backgroundColor: viewMode === 'all' ? '#3b82f6' : 'transparent',
+              color: '#fff',
+              border: '1px solid #3b82f6',
+              padding: '6px 14px',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontWeight: '600'
+            }}
+          >
+            All Employees (Including Resigned/Terminated)
+          </button>
+        </div>
+
+        {/* Search Input */}
+        <div className="search-box">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18">
             <path
               strokeLinecap="round"
@@ -197,51 +196,21 @@ function EmployeeManagementPage() {
           <input
             type="text"
             className="search-input"
-            placeholder="Search by first or last name…"
+            placeholder="Search by code, name, email, department…"
             value={searchKeyword}
             onChange={(e) => setSearchKeyword(e.target.value)}
           />
-        </form>
-        <button type="button" className="btn-filter-action" onClick={handleSearch}>
-          Search
-        </button>
-
-        {/* Filter by Manager ID */}
-        <form className="manager-filter-box" onSubmit={handleManagerLookup}>
-          <label htmlFor="mgrFilterInput">Direct Reports:</label>
-          <input
-            id="mgrFilterInput"
-            type="number"
-            min="1"
-            className="manager-input"
-            placeholder="Manager ID"
-            value={managerFilterId}
-            onChange={(e) => setManagerFilterId(e.target.value)}
-          />
-          <button type="submit" className="btn-filter-action">
-            Fetch Team
-          </button>
-        </form>
-
-        {(searchKeyword || managerFilterId || activeFilterType !== 'all') && (
-          <button type="button" className="btn-filter-clear" onClick={handleResetFilters}>
-            Clear Filters
-          </button>
-        )}
+        </div>
       </div>
 
       {/* Employee List Table */}
       <div className="employee-table-card">
         <div className="table-header-info">
           <span className="title">
-            {activeFilterType === 'manager'
-              ? `Direct Reports of Manager #${managerFilterId}`
-              : activeFilterType === 'search' && searchKeyword
-              ? `Search Results for "${searchKeyword}"`
-              : 'All Employees'}
+            {viewMode === 'active' ? 'Active Employee Database' : 'All Employee Records'}
           </span>
           <span className="count-badge">
-            {employees.length} {employees.length === 1 ? 'employee' : 'employees'}
+            {filteredEmployees.length} {filteredEmployees.length === 1 ? 'employee' : 'employees'}
           </span>
         </div>
 
@@ -249,12 +218,12 @@ function EmployeeManagementPage() {
           {loading ? (
             <div className="empty-state">
               <div className="spinner" style={{ borderColor: '#3b82f6', borderTopColor: 'transparent', width: 24, height: 24 }} />
-              <p style={{ marginTop: 12 }}>Loading employee records…</p>
+              <p style={{ marginTop: 12 }}>Loading employee records from database…</p>
             </div>
-          ) : employees.length === 0 ? (
+          ) : filteredEmployees.length === 0 ? (
             <div className="empty-state">
               <div className="empty-state-icon">👥</div>
-              <p>No employees found matching the criteria.</p>
+              <p>No employee records found in database.</p>
             </div>
           ) : (
             <table className="employee-table">
@@ -270,7 +239,7 @@ function EmployeeManagementPage() {
                 </tr>
               </thead>
               <tbody>
-                {employees.map((emp) => {
+                {filteredEmployees.map((emp) => {
                   const statusClass = (emp.status || 'active').toLowerCase();
                   return (
                     <tr key={emp.employeeId || emp.employeeCode}>
@@ -312,7 +281,7 @@ function EmployeeManagementPage() {
                           <select
                             className="status-select-inline"
                             value={emp.status}
-                            onChange={(e) => handleStatusChange(emp.employeeId, e.target.value)}
+                            onChange={(e) => handleStatusChange(emp, e.target.value)}
                             title="Quick Status Update"
                           >
                             <option value="ACTIVE">ACTIVE</option>
@@ -331,19 +300,17 @@ function EmployeeManagementPage() {
                             ✏️ Edit
                           </button>
 
-                          {/* Soft Delete Deactivate Button */}
-                          {emp.status !== 'INACTIVE' && (
-                            <button
-                              type="button"
-                              className="btn-action-icon danger"
-                              onClick={() =>
-                                handleSoftDelete(emp.employeeId, `${emp.firstName} ${emp.lastName || ''}`)
-                              }
-                              title="Deactivate (Soft Delete)"
-                            >
-                              🚫 Deactivate
-                            </button>
-                          )}
+                          {/* Delete Button */}
+                          <button
+                            type="button"
+                            className="btn-action-icon danger"
+                            onClick={() =>
+                              handleDelete(emp.employeeId, `${emp.firstName} ${emp.lastName || ''}`)
+                            }
+                            title="Delete Employee"
+                          >
+                            🗑️ Delete
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -359,3 +326,4 @@ function EmployeeManagementPage() {
 }
 
 export default EmployeeManagementPage;
+

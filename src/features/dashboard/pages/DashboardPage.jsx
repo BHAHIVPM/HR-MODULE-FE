@@ -1,158 +1,98 @@
-<<<<<<< HEAD
-import './DashboardPage.css';
-=======
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useNotification } from '../../../context/NotificationContext';
->>>>>>> d0ebdba3f460d4c0c55afbe2346a4b9167f24491
+import './DashboardPage.css';
 
 function DashboardPage() {
   const { showSuccess, showErrorPopup } = useNotification();
 
   return (
-<<<<<<< HEAD
     <div className="dashboard">
       <div className="dashboard-welcome">
         <div>
           <h1>Welcome back</h1>
-          <p>Here's a quick look at your workspace.</p>
+          <p>Here's a quick look at your HR workspace and active modules.</p>
         </div>
       </div>
 
       <div className="dashboard-grid">
+        {/* Overview Card */}
         <section className="dashboard-card dashboard-card-wide">
-          <h2>Overview</h2>
-          <p className="dashboard-card-empty">
-            Your account activity and summaries will show up here once available.
+          <h2>Overview & Quick Access</h2>
+          <p className="dashboard-card-desc">
+            Manage your organizational workforce, employees, registration modules, and system features seamlessly.
           </p>
-        </section>
-
-        <section className="dashboard-card">
-          <h2>Recent activity</h2>
-          <p className="dashboard-card-empty">Nothing to show yet.</p>
-        </section>
-
-        <section className="dashboard-card">
-          <h2>Quick actions</h2>
-          <p className="dashboard-card-empty">Actions for your account will appear here.</p>
-        </section>
-      </div>
-=======
-    <div style={{ maxWidth: 1000, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24 }}>
-      <div
-        style={{
-          background: '#ffffff',
-          padding: '24px 28px',
-          borderRadius: 12,
-          border: '1px solid #e2e8f0',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-        }}
-      >
-        <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700, color: '#0f172a' }}>
-          Welcome to HR Module Dashboard
-        </h1>
-        <p style={{ margin: '8px 0 0 0', color: '#64748b', fontSize: 14 }}>
-          Manage your organizational workforce, employees, teams, and access control.
-        </p>
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20 }}>
-        <div
-          style={{
-            background: '#ffffff',
-            padding: 24,
-            borderRadius: 12,
-            border: '1px solid #e2e8f0',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-          }}
-        >
-          <div>
-            <div style={{ fontSize: 28, marginBottom: 8 }}>👥</div>
-            <h3 style={{ margin: '0 0 8px 0', fontSize: 18, color: '#0f172a' }}>Employee Directory</h3>
-            <p style={{ margin: 0, fontSize: 13, color: '#64748b', lineHeight: 1.5 }}>
-              Search records, inspect direct reports, update employment status, and onboard new team members.
-            </p>
+          <div className="dashboard-quick-links">
+            <Link to="/employees" className="dashboard-btn primary">
+              👥 Go to Employee Directory
+            </Link>
+            <Link to="/registrations/user" className="dashboard-btn secondary">
+              👤 User Registration
+            </Link>
+            <Link to="/registrations/employee" className="dashboard-btn secondary">
+              💼 Employee Onboarding
+            </Link>
+            <Link to="/registrations/client" className="dashboard-btn secondary">
+              🏢 Client Registration
+            </Link>
           </div>
-          <Link
-            to="/employees"
-            style={{
-              marginTop: 18,
-              display: 'inline-block',
-              padding: '9px 18px',
-              background: '#2563eb',
-              color: '#ffffff',
-              borderRadius: 6,
-              textDecoration: 'none',
-              fontWeight: 600,
-              fontSize: 14,
-              textAlign: 'center',
-            }}
-          >
-            Go to Employees →
-          </Link>
-        </div>
+        </section>
 
-        <div
-          style={{
-            background: '#ffffff',
-            padding: 24,
-            borderRadius: 12,
-            border: '1px solid #e2e8f0',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-          }}
-        >
-          <div style={{ fontSize: 28, marginBottom: 8 }}>🔔</div>
-          <h3 style={{ margin: '0 0 8px 0', fontSize: 18, color: '#0f172a' }}>Notification & Error Testing</h3>
-          <p style={{ margin: '0 0 16px 0', fontSize: 13, color: '#64748b', lineHeight: 1.5 }}>
-            Test the global notification system (1.5s top-right sliding rectangle and error pop-up modal):
+        {/* Recent Activity / System Card */}
+        <section className="dashboard-card">
+          <h2>Quick Actions</h2>
+          <p className="dashboard-card-desc">
+            Access core system workflows and registration forms directly from your dashboard.
           </p>
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <div className="dashboard-action-list">
+            <Link to="/employees" className="dashboard-action-item">
+              <span className="action-icon">📋</span>
+              <div>
+                <strong>Manage Team Members</strong>
+                <span>Search, edit status, or add new employees</span>
+              </div>
+            </Link>
+            <Link to="/registrations/user" className="dashboard-action-item">
+              <span className="action-icon">✨</span>
+              <div>
+                <strong>Create User Account</strong>
+                <span>Register new portal users with dynamic forms</span>
+              </div>
+            </Link>
+          </div>
+        </section>
+
+        {/* Notifications & Alert Testing */}
+        <section className="dashboard-card">
+          <h2>System Notifications & Alerts</h2>
+          <p className="dashboard-card-desc">
+            Test real-time toast alerts (1.5s auto-dismiss) and error pop-up modal dialogs.
+          </p>
+          <div className="dashboard-test-buttons">
             <button
               type="button"
+              className="dashboard-btn success"
               onClick={() => showSuccess('Action completed successfully! Auto-closing in 1.5s.', 'Success Alert')}
-              style={{
-                padding: '8px 14px',
-                background: '#10b981',
-                color: '#fff',
-                border: 'none',
-                borderRadius: 6,
-                fontSize: 13,
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
             >
-              Test 1.5s Success Toast
+              Test 1.5s Toast Alert
             </button>
             <button
               type="button"
+              className="dashboard-btn danger"
               onClick={() =>
                 showErrorPopup({
-                  title: 'Sample Backend Failure',
-                  message: 'Could not fetch team members. Database connection timed out.',
+                  title: 'Sample System Exception',
+                  message: 'Could not connect to database server. Please check network logs.',
                   statusCode: 500,
-                  details: 'Exception: Connection pool exhausted at com.bhahi.hrmodule.service.EmployeeMasterService',
+                  details: 'Connection pool exhausted at EmployeeService.java:142',
                 })
               }
-              style={{
-                padding: '8px 14px',
-                background: '#dc2626',
-                color: '#fff',
-                border: 'none',
-                borderRadius: 6,
-                fontSize: 13,
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
             >
               Test Error Pop-up Modal
             </button>
           </div>
-        </div>
+        </section>
       </div>
->>>>>>> d0ebdba3f460d4c0c55afbe2346a4b9167f24491
     </div>
   );
 }
