@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import LoginForm from '../components/LoginForm';
 import authService from '../services/authService';
 import { useAuth, DEV_AUTH_KEY } from '../../../context/AuthContext';
+import { LOGIN_ID_KEY } from '../../../api/axiosClient';
+import { isValidVerhoeff } from '../../../utils/verhoeff';
 import AppHeader from '../../../components/AppHeader/AppHeader';
 
-const DEV_USERNAME = '100112345678';
+const DEV_USERNAME = '100112345676';
 const DEV_PASSWORD = 'admin';
 
 function LoginPage() {
@@ -29,8 +31,16 @@ function LoginPage() {
     const loginId = credentials.loginId || credentials.username;
     const password = credentials.password;
 
+    // Verhoeff checksum validation - every login ID must end with a valid Verhoeff check digit.
+    if (!isValidVerhoeff(loginId)) {
+      setError('Invalid Login ID: the Verhoeff check digit is incorrect.');
+      setLoading(false);
+      return;
+    }
+
     if ((loginId === DEV_USERNAME || loginId === 'admin') && password === DEV_PASSWORD) {
       sessionStorage.setItem(DEV_AUTH_KEY, 'true');
+      sessionStorage.setItem(LOGIN_ID_KEY, loginId);
       setIsAuthenticated(true);
       goToDashboard();
       return;
@@ -38,6 +48,7 @@ function LoginPage() {
 
     try {
       await authService.login(loginId, password);
+      sessionStorage.setItem(LOGIN_ID_KEY, loginId);
       setIsAuthenticated(true);
       goToDashboard();
     } catch (err) {

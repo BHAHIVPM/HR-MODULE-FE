@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import authService from '../services/authService';
+import { isValidVerhoeff } from '../../../utils/verhoeff';
 import './LoginForm.css';
 
 function LoginForm({ onSubmit, error, loading }) {
@@ -29,6 +30,12 @@ function LoginForm({ onSubmit, error, loading }) {
     setTempLoading(true);
     setTempErrorMsg(null);
     setTempSuccessMsg(null);
+    // Verhoeff checksum validation - every login ID must end with a valid Verhoeff check digit.
+    if (!isValidVerhoeff(loginId)) {
+      setTempErrorMsg('Invalid Login ID: the Verhoeff check digit is incorrect.');
+      setTempLoading(false);
+      return;
+    }
     try {
       const res = await authService.verifyTempPassword(loginId, tempPassword);
       setTempSuccessMsg(res?.data?.message || 'Temp password verified! Enter your new password below.');
@@ -46,6 +53,12 @@ function LoginForm({ onSubmit, error, loading }) {
     setTempLoading(true);
     setTempErrorMsg(null);
     setTempSuccessMsg(null);
+    // Verhoeff checksum validation - every login ID must end with a valid Verhoeff check digit.
+    if (!isValidVerhoeff(loginId)) {
+      setTempErrorMsg('Invalid Login ID: the Verhoeff check digit is incorrect.');
+      setTempLoading(false);
+      return;
+    }
     try {
       const res = await authService.changePassword(loginId, tempPassword, newPassword);
       setTempSuccessMsg(res?.data?.message || 'Password changed successfully! You can now log in.');

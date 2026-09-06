@@ -1,8 +1,11 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import authService from '../features/auth/services/authService';
+import { DEV_AUTH_KEY, LOGIN_ID_KEY } from '../api/axiosClient';
 
 const AuthContext = createContext();
-export const DEV_AUTH_KEY = 'hr-dev-auth';
+
+// Re-export for backward compatibility
+export { DEV_AUTH_KEY };
 
 export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -15,10 +18,21 @@ export function AuthProvider({ children }) {
       return;
     }
 
+    const loginId = sessionStorage.getItem(LOGIN_ID_KEY);
+    if (!loginId) {
+      setIsAuthenticated(false);
+      setChecking(false);
+      return;
+    }
+
     try {
-      await authService.aboutMe();
+      // Attempt to refresh the access token (the httpOnly refresh cookie is sent automatically).
+      // If it succeeds, the session is still valid.
+      await authService.refresh(loginId);
       setIsAuthenticated(true);
     } catch {
+      // Refresh failed → session truly expired. Clear stored loginId.
+      sessionStorage.removeItem(LOGIN_ID_KEY);
       setIsAuthenticated(false);
     } finally {
       setChecking(false);
@@ -31,6 +45,7 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     sessionStorage.removeItem(DEV_AUTH_KEY);
+    sessionStorage.removeItem(LOGIN_ID_KEY);
     try {
       await authService.logout();
     } catch {

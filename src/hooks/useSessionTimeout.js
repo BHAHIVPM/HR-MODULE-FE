@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import authService from '../features/auth/services/authService';
 import { useAuth } from '../context/AuthContext';
+import { LOGIN_ID_KEY } from '../api/axiosClient';
 import { useNavigate } from 'react-router-dom';
 
 const WARNING_AT_MS = 13 * 60 * 1000;  // show popup at 13 min
@@ -14,6 +15,7 @@ export function useSessionTimeout() {
   const lastRefreshAt = useRef(Date.now());
   const { setIsAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const loginId = sessionStorage.getItem(LOGIN_ID_KEY);
 
   const clearTimers = () => {
     clearTimeout(warningTimer.current);
@@ -22,6 +24,7 @@ export function useSessionTimeout() {
 
   const forceLogout = useCallback(() => {
     clearTimers();
+    sessionStorage.removeItem(LOGIN_ID_KEY);
     setIsAuthenticated(false);
     navigate('/login');
   }, [navigate, setIsAuthenticated]);
@@ -40,11 +43,15 @@ export function useSessionTimeout() {
     if (now - lastRefreshAt.current < REFRESH_THROTTLE_MS) return;
 
     lastRefreshAt.current = now;
+    if (!loginId) {
+      forceLogout();
+      return;
+    }
     authService
-      .refresh()
+      .refresh(loginId)
       .then(() => resetTimers()) // token renewed → restart 13/15 min clock
       .catch(() => forceLogout()); // refresh failed (e.g. session truly expired)
-  }, [resetTimers, forceLogout]);
+  }, [resetTimers, forceLogout, loginId]);
 
   useEffect(() => {
     resetTimers(); // start clock as soon as this hook mounts (i.e. after login)
@@ -61,7 +68,11 @@ export function useSessionTimeout() {
 
   // Called when user clicks "Stay logged in" on the warning popup
   const extendSession = () => {
-    authService.refresh().then(resetTimers).catch(forceLogout);
+    if (!loginId) {
+      forceLogout();
+      return;
+    }
+    authService.refresh(loginId).then(resetTimers).catch(forceLogout);
   };
 
   return { showWarning, extendSession, forceLogout };
