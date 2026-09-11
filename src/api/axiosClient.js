@@ -2,7 +2,6 @@ import axios from 'axios';
 
 const axiosClient = axios.create({
   baseURL: 'http://localhost:8060/',
-  baseURL: 'http://localhost:8060/',
   withCredentials: true, // REQUIRED so the httpOnly cookie is sent/received
 });
 
@@ -26,23 +25,36 @@ const redirectToLogin = () => {
   }
 };
 
-// On ANY 401, first try to refresh the access token (the refresh token lives in an
-// httpOnly cookie so it's sent automatically). If refresh succeeds, replay the failed
-// request with the new access token. If refresh fails, the session is truly expired → logout.
+// Response interceptor:
+// 1. If backend server is down (no response received), trigger global server-down-error popup.
+// 2. On ANY 401, first try to refresh the access token via httpOnly cookie.
 axiosClient.interceptors.response.use(
   (res) => res,
   async (err) => {
+    // Check if backend server is down / no response received
+    if (!err.response) {
+      window.dispatchEvent(
+        new CustomEvent('server-down-error', {
+          detail: {
+            message: err.message || 'Unable to connect to the backend server.',
+            url: err.config?.url ? `${err.config.baseURL || ''}${err.config.url}` : 'Backend API',
+            timestamp: new Date().toLocaleTimeString(),
+          },
+        })
+      );
+    }
+
     const originalRequest = err.config;
 
     if (sessionStorage.getItem(DEV_AUTH_KEY) === 'true') {
       return Promise.reject(err);
     }
 
-    if (originalRequest._isRefreshRequest) {
+    if (originalRequest?._isRefreshRequest) {
       return Promise.reject(err);
     }
 
-    if (err.response?.status === 401 && !originalRequest._retry) {
+    if (err.response?.status === 401 && !originalRequest?._retry) {
       originalRequest._retry = true;
 
       const loginId = sessionStorage.getItem(LOGIN_ID_KEY);
