@@ -2,6 +2,7 @@ import axios from 'axios';
 
 const axiosClient = axios.create({
   baseURL: 'http://localhost:8060/',
+  baseURL: 'http://localhost:8060/',
   withCredentials: true, // REQUIRED so the httpOnly cookie is sent/received
 });
 
