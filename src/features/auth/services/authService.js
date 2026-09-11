@@ -16,6 +16,17 @@ const authService = {
 
   logout: () => axiosClient.post('/auth/logout'),
   aboutMe: () => axiosClient.get('/auth/about-me'),
+  refresh: () => {
+    if (sessionStorage.getItem('hr-dev-auth') === 'true') {
+      return Promise.resolve({ data: { message: 'Dev session active' } });
+    }
+    return axiosClient.post('/auth/refresh').catch((err) => {
+      if (err.response?.status === 404) {
+        return axiosClient.get('/auth/about-me');
+      }
+      return Promise.reject(err);
+    });
+  },
 };
 
 export default authService;

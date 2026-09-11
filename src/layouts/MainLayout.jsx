@@ -18,6 +18,51 @@ const NAV_ITEMS = [
     icon: UsersIcon,
   },
   {
+    label: 'Organization',
+    listPath: '/organization',
+    icon: OrganizationIcon,
+  },
+  {
+    label: 'Shifts & Rosters',
+    listPath: '/shifts',
+    icon: ShiftIcon,
+  },
+  {
+    label: 'Attendance',
+    listPath: '/attendance',
+    icon: AttendanceIcon,
+  },
+  {
+    label: 'Leaves',
+    listPath: '/leaves',
+    icon: LeaveIcon,
+  },
+  {
+    label: 'Holidays',
+    listPath: '/holidays',
+    icon: HolidayIcon,
+  },
+  {
+    label: 'Payroll & Salary',
+    listPath: '/payroll-management',
+    icon: PayrollIcon,
+  },
+  {
+    label: 'Assets',
+    listPath: '/assets',
+    icon: AssetIcon,
+  },
+  {
+    label: 'Documents',
+    listPath: '/documents',
+    icon: DocumentIcon,
+  },
+  {
+    label: 'Appraisals',
+    listPath: '/performance-reviews',
+    icon: PerformanceIcon,
+  },
+  {
     label: 'Users',
     listPath: '/userData',
     formPath: '/registrations/user',
@@ -110,6 +155,15 @@ function MainLayout() {
 function getPageTitle(pathname) {
   if (pathname === '/dashboard') return 'Dashboard';
   if (pathname === '/employees') return 'Employee Directory';
+  if (pathname === '/organization') return 'Organization Structure';
+  if (pathname === '/shifts') return 'Shift & Rostering';
+  if (pathname === '/attendance') return 'Attendance Log';
+  if (pathname === '/leaves') return 'Leave Management';
+  if (pathname === '/holidays') return 'Holiday Calendar';
+  if (pathname === '/payroll-management') return 'Payroll & Compensation';
+  if (pathname === '/assets') return 'Asset Inventory';
+  if (pathname === '/documents') return 'Document Repository';
+  if (pathname === '/performance-reviews') return 'Performance Reviews & Appraisals';
   if (pathname === '/userData') return 'User Data Directory';
   if (pathname === '/clients') return 'Client Directory';
   if (pathname === '/registrations/user') return 'User Registration';
@@ -134,6 +188,85 @@ function UsersIcon() {
     <svg viewBox="0 0 20 20" width="18" height="18" fill="none" aria-hidden="true">
       <path d="M7 9a3 3 0 100-6 3 3 0 000 6zM13 9a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" stroke="currentColor" strokeWidth="1.5" />
       <path d="M2.5 16.5c1-2.5 3.5-3.5 6.5-3.5s5.5 1 6.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function OrganizationIcon() {
+  return (
+    <svg viewBox="0 0 20 20" width="18" height="18" fill="none" aria-hidden="true">
+      <path d="M10 2v4M5 6h10M5 6v3M15 6v3M10 10v3M3 13h14M3 13v4M10 13v4M17 13v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function ShiftIcon() {
+  return (
+    <svg viewBox="0 0 20 20" width="18" height="18" fill="none" aria-hidden="true">
+      <circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M10 6v4l2.5 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function AttendanceIcon() {
+  return (
+    <svg viewBox="0 0 20 20" width="18" height="18" fill="none" aria-hidden="true">
+      <rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M7 10l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function LeaveIcon() {
+  return (
+    <svg viewBox="0 0 20 20" width="18" height="18" fill="none" aria-hidden="true">
+      <rect x="3" y="4" width="14" height="13" rx="2" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M3 8h14M7 2v4M13 2v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function HolidayIcon() {
+  return (
+    <svg viewBox="0 0 20 20" width="18" height="18" fill="none" aria-hidden="true">
+      <path d="M10 3l2.2 4.5 4.9.7-3.5 3.4.8 4.9L10 14.2l-4.4 2.3.8-4.9L2.9 8.2l4.9-.7L10 3z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function PayrollIcon() {
+  return (
+    <svg viewBox="0 0 20 20" width="18" height="18" fill="none" aria-hidden="true">
+      <rect x="2.5" y="4.5" width="15" height="11" rx="2" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M2.5 8.5h15M6.5 12.5h3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function AssetIcon() {
+  return (
+    <svg viewBox="0 0 20 20" width="18" height="18" fill="none" aria-hidden="true">
+      <rect x="3" y="4" width="14" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M7 16h6M10 13v3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function DocumentIcon() {
+  return (
+    <svg viewBox="0 0 20 20" width="18" height="18" fill="none" aria-hidden="true">
+      <path d="M5 3.5h7l4 4v9a1.5 1.5 0 01-1.5 1.5h-9.5A1.5 1.5 0 013.5 16.5v-11.5A1.5 1.5 0 015 3.5z" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M12 3.5v4h4M7 11h6M7 14h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function PerformanceIcon() {
+  return (
+    <svg viewBox="0 0 20 20" width="18" height="18" fill="none" aria-hidden="true">
+      <path d="M3 16l4-5 3.5 3 5.5-8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M13 6h3v3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }

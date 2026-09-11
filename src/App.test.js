@@ -7,11 +7,12 @@ import employeeService from './features/employee/services/employeeService';
 jest.mock('./features/employee/services/employeeService', () => ({
   __esModule: true,
   default: {
-    searchByName: jest.fn(),
-    findByReportingManagerId: jest.fn(),
-    updateStatus: jest.fn(),
-    softDelete: jest.fn(),
-    checkCodeExists: jest.fn(),
+    findAllActive: jest.fn(),
+    findAll: jest.fn(),
+    findById: jest.fn(),
+    save: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
   },
 }));
 
@@ -34,48 +35,48 @@ describe('EmployeeManagementPage Component', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    employeeService.searchByName.mockResolvedValue({
+    employeeService.findAllActive.mockResolvedValue({
       data: {
         header: 'Success',
-        message: 'Employee search completed.',
+        message: 'Active employees loaded.',
         statusCode: 200,
         responseOutput: mockEmployees,
       },
     });
-    employeeService.updateStatus.mockResolvedValue({
-      data: { message: 'Employee status updated to INACTIVE' },
-    });
-    employeeService.softDelete.mockResolvedValue({
-      data: { message: 'Employee deactivated successfully.' },
-    });
-    employeeService.findByReportingManagerId.mockResolvedValue({
+    employeeService.findAll.mockResolvedValue({
       data: {
         header: 'Success',
-        message: 'Direct reports fetched.',
+        message: 'All employees loaded.',
+        statusCode: 200,
         responseOutput: mockEmployees,
       },
     });
+    employeeService.update.mockResolvedValue({
+      data: { message: 'Employee updated successfully' },
+    });
+    employeeService.delete.mockResolvedValue({
+      data: { message: 'Employee deleted successfully.' },
+    });
   });
 
-  test('renders EmployeeManagementPage with employee directory and action controls', async () => {
+  test('renders EmployeeManagementPage with employee directory', async () => {
     render(
       <NotificationProvider>
         <EmployeeManagementPage />
       </NotificationProvider>
     );
 
-    expect(screen.getByText(/Employee Management/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/Search by first or last name/i)).toBeInTheDocument();
+    expect(screen.getByText(/Employee Directory/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/Search by code, name, email, department/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /\+ Add New Employee/i })).toBeInTheDocument();
 
-    // Verify employee record is loaded
     await waitFor(() => {
       expect(screen.getByText('EMP001')).toBeInTheDocument();
       expect(screen.getByText('john.doe@company.com')).toBeInTheDocument();
     });
   });
 
-  test('updates employee status via quick dropdown', async () => {
+  test('updates employee status via status change dropdown', async () => {
     render(
       <NotificationProvider>
         <EmployeeManagementPage />
@@ -90,25 +91,7 @@ describe('EmployeeManagementPage Component', () => {
     fireEvent.change(statusSelect, { target: { value: 'INACTIVE' } });
 
     await waitFor(() => {
-      expect(employeeService.updateStatus).toHaveBeenCalledWith(1, 'INACTIVE');
-    });
-  });
-
-  test('fetches direct reports when searching by Manager ID', async () => {
-    render(
-      <NotificationProvider>
-        <EmployeeManagementPage />
-      </NotificationProvider>
-    );
-
-    const mgrInput = screen.getByPlaceholderText('Manager ID');
-    fireEvent.change(mgrInput, { target: { value: '10' } });
-
-    const fetchTeamBtn = screen.getByRole('button', { name: /fetch team/i });
-    fireEvent.click(fetchTeamBtn);
-
-    await waitFor(() => {
-      expect(employeeService.findByReportingManagerId).toHaveBeenCalledWith(10);
+      expect(employeeService.update).toHaveBeenCalledWith(1, expect.objectContaining({ status: 'INACTIVE' }));
     });
   });
 });
