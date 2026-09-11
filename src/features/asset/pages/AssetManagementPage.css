@@ -1,0 +1,57 @@
+.asset-page {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.asset-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.asset-header h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text-primary, #1e293b);
+  margin: 0;
+}
+
+.asset-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.badge-AVAILABLE { background: #dcfce7; color: #15803d; }
+.badge-ISSUED { background: #e0f2fe; color: #0369a1; }
+.badge-RETURNED { background: #f1f5f9; color: #475569; }
+.badge-DAMAGED { background: #fee2e2; color: #b91c1c; }
+.badge-LOST { background: #fef3c7; color: #b45309; }
+.badge-RETIRED { background: #e2e8f0; color: #334155; }
+
+.btn-issue {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn-return {
+  background: #f59e0b;
+  color: white;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+}

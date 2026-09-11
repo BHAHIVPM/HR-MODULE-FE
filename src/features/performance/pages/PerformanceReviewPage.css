@@ -1,0 +1,45 @@
+.review-page {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.review-header h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text-primary, #1e293b);
+  margin: 0;
+}
+
+.review-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.badge-DRAFT { background: #f1f5f9; color: #475569; }
+.badge-SUBMITTED { background: #e0f2fe; color: #0369a1; }
+.badge-REVIEWED { background: #fef3c7; color: #b45309; }
+.badge-ACKNOWLEDGED { background: #dcfce7; color: #15803d; }
+
+.rating-pill {
+  background: #fef9c3;
+  color: #a16207;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
