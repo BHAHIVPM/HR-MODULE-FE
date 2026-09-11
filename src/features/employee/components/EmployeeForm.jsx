@@ -177,9 +177,9 @@ function EmployeeForm({ initialData = null, onSuccess, onCancel }) {
     try {
       let response;
       if (isEditing) {
-        response = await employeeService.updateEmployee(initialData.employeeId, payload);
+        response = await employeeService.update(initialData.employeeId, payload);
       } else {
-        response = await employeeService.createEmployee(payload);
+        response = await employeeService.save(payload);
       }
 
       // Show success toast - slides in at top right and disappears after 1.5s

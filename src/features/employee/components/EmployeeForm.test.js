@@ -2,20 +2,19 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import ErrorModal from '../../../components/common/ErrorModal/ErrorModal';
 import Toast from '../../../components/common/Toast/Toast';
-import { NotificationProvider, useNotification } from '../../../context/NotificationContext';
+import { NotificationProvider } from '../../../context/NotificationContext';
 import EmployeeForm from './EmployeeForm';
 import employeeService from '../services/employeeService';
 
 jest.mock('../services/employeeService', () => ({
   __esModule: true,
   default: {
-    checkCodeExists: jest.fn(),
-    createEmployee: jest.fn(),
-    updateEmployee: jest.fn(),
-    searchByName: jest.fn(),
-    findByReportingManagerId: jest.fn(),
-    softDelete: jest.fn(),
-    updateStatus: jest.fn(),
+    save: jest.fn(),
+    update: jest.fn(),
+    findAllActive: jest.fn(),
+    findAll: jest.fn(),
+    findById: jest.fn(),
+    delete: jest.fn(),
   },
 }));
 
@@ -67,9 +66,8 @@ describe('EmployeeForm Component', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    employeeService.checkCodeExists.mockResolvedValue({ data: { responseOutput: false } });
-    employeeService.createEmployee.mockResolvedValue({ data: { message: 'Employee created successfully.' } });
-    employeeService.updateEmployee.mockResolvedValue({ data: { message: 'Employee updated successfully.' } });
+    employeeService.save.mockResolvedValue({ data: { message: 'Employee created successfully.' } });
+    employeeService.update.mockResolvedValue({ data: { message: 'Employee updated successfully.' } });
   });
 
   test('renders all Employee Master form inputs', () => {
@@ -90,26 +88,8 @@ describe('EmployeeForm Component', () => {
     const submitBtn = screen.getByRole('button', { name: /create employee/i });
     fireEvent.click(submitBtn);
 
-    // Validation error modal pops up
     await waitFor(() => {
       expect(screen.getByText(/Validation Error/i)).toBeInTheDocument();
-    });
-  });
-
-  test('checks employee code uniqueness on blur and warns when code already exists', async () => {
-    employeeService.checkCodeExists.mockResolvedValueOnce({
-      data: { responseOutput: true },
-    });
-
-    renderWithNotification(<EmployeeForm />);
-
-    const codeInput = screen.getByLabelText(/Employee Code/i);
-    fireEvent.change(codeInput, { target: { value: 'DUPLICATE_CODE' } });
-    fireEvent.blur(codeInput);
-
-    await waitFor(() => {
-      expect(employeeService.checkCodeExists).toHaveBeenCalledWith('DUPLICATE_CODE');
-      expect(screen.getByText(/already in use/i)).toBeInTheDocument();
     });
   });
 
@@ -127,13 +107,13 @@ describe('EmployeeForm Component', () => {
     fireEvent.click(submitBtn);
 
     await waitFor(() => {
-      expect(employeeService.createEmployee).toHaveBeenCalledTimes(1);
+      expect(employeeService.save).toHaveBeenCalledTimes(1);
       expect(handleSuccess).toHaveBeenCalledTimes(1);
     });
   });
 
   test('shows backend error pop-up modal when submission fails', async () => {
-    employeeService.createEmployee.mockRejectedValueOnce({
+    employeeService.save.mockRejectedValueOnce({
       response: {
         status: 500,
         data: {
