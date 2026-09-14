@@ -1,0 +1,49 @@
+.document-page {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.document-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.document-header h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text-primary, #1e293b);
+  margin: 0;
+}
+
+.document-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.badge-verified {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.badge-unverified {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.btn-verify {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+}

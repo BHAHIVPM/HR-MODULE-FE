@@ -1,0 +1,120 @@
+.attendance-page {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.attendance-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.attendance-header h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text-primary, #1e293b);
+  margin: 0;
+}
+
+.quick-checkin-card {
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+}
+
+.quick-checkin-card h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 1.1rem;
+  color: var(--text-primary, #0f172a);
+}
+
+.quick-checkin-form {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.quick-checkin-form input {
+  padding: 9px 14px;
+  border: 1px solid var(--border-color, #cbd5e1);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  width: 220px;
+  background: var(--bg-card, #ffffff);
+  color: var(--text-primary, #1e293b);
+}
+
+.btn-checkin {
+  background: #10b981;
+  color: #ffffff;
+  border: none;
+  padding: 9px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-checkin:hover {
+  background: #059669;
+}
+
+.btn-checkout {
+  background: #f59e0b;
+  color: #ffffff;
+  border: none;
+  padding: 9px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-checkout:hover {
+  background: #d97706;
+}
+
+.attendance-filters {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  background: var(--bg-card, #ffffff);
+  padding: 16px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color, #e2e8f0);
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary, #475569);
+}
+
+.filter-group input {
+  padding: 7px 12px;
+  border: 1px solid var(--border-color, #cbd5e1);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  background: var(--bg-card, #ffffff);
+  color: var(--text-primary, #1e293b);
+}
+
+.badge-PRESENT { background: #dcfce7; color: #15803d; }
+.badge-ABSENT { background: #fee2e2; color: #b91c1c; }
+.badge-HALF_DAY { background: #fef3c7; color: #b45309; }
+.badge-ON_LEAVE { background: #e0e7ff; color: #4338ca; }
+.badge-HOLIDAY { background: #f3e8ff; color: #6b21a8; }
+.badge-WEEK_OFF { background: #f1f5f9; color: #475569; }

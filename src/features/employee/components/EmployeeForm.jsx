@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import employeeService from '../services/employeeService';
 import { useNotification } from '../../../context/NotificationContext';
 import './EmployeeForm.css';
@@ -46,12 +46,11 @@ function EmployeeForm({ initialData = null, onSuccess, onCancel }) {
     }
   }, [initialData]);
 
-  // Handle checking employeeCode uniqueness against /employee/exists/{employeeCode}
-  const checkEmployeeCode = async (codeToTest) => {
+  // Verify uniqueness of employeeCode against API
+  const checkEmployeeCode = useCallback(async (codeToTest) => {
     const code = (codeToTest || formData.employeeCode).trim();
     if (!code) return;
 
-    // If editing and code has not changed from original, skip check
     if (isEditing && initialData?.employeeCode === code) {
       setCodeCheckStatus({ checking: false, exists: false, message: '' });
       return;
@@ -61,7 +60,6 @@ function EmployeeForm({ initialData = null, onSuccess, onCancel }) {
 
     try {
       const response = await employeeService.checkCodeExists(code);
-      // ResponseMessage<Boolean> -> responseOutput contains true/false
       const exists = response?.data?.responseOutput === true;
       if (exists) {
         setCodeCheckStatus({
@@ -86,13 +84,12 @@ function EmployeeForm({ initialData = null, onSuccess, onCancel }) {
       console.error('Error verifying employee code', err);
       setCodeCheckStatus({ checking: false, exists: null, message: '' });
     }
-  };
+  }, [formData.employeeCode, isEditing, initialData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
 
-    // Reset inline error for this field
     if (errors[name]) {
       setErrors((prev) => {
         const next = { ...prev };
@@ -151,7 +148,7 @@ function EmployeeForm({ initialData = null, onSuccess, onCancel }) {
     if (!validateForm()) {
       showErrorPopup({
         title: 'Validation Error',
-        message: 'Please resolve the highlighted fields in the form before submitting.',
+        message: 'Please resolve highlighted fields in the form before submitting.',
       });
       return;
     }
@@ -177,12 +174,11 @@ function EmployeeForm({ initialData = null, onSuccess, onCancel }) {
     try {
       let response;
       if (isEditing) {
-        response = await employeeService.updateEmployee(initialData.employeeId, payload);
+        response = await employeeService.update(initialData.employeeId, payload);
       } else {
-        response = await employeeService.createEmployee(payload);
+        response = await employeeService.save(payload);
       }
 
-      // Show success toast - slides in at top right and disappears after 1.5s
       const successMsg =
         response?.data?.message ||
         (isEditing ? 'Employee updated successfully.' : 'Employee created successfully.');
@@ -197,7 +193,6 @@ function EmployeeForm({ initialData = null, onSuccess, onCancel }) {
         onSuccess(response?.data);
       }
     } catch (err) {
-      // Reusable error popup modal shows up with details from backend
       showErrorPopup(err);
     } finally {
       setLoading(false);

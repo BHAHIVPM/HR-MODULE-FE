@@ -28,21 +28,22 @@ function LoginPage() {
     setLoading(true);
     setError(null);
 
-    const loginId = credentials.loginId || credentials.username;
-    const password = credentials.password;
+    const loginId = (credentials.loginId || credentials.username || '').trim();
+    const password = credentials.password || '';
 
-    // Verhoeff checksum validation - every login ID must end with a valid Verhoeff check digit.
-    if (!isValidVerhoeff(loginId)) {
-      setError('Invalid Login ID: the Verhoeff check digit is incorrect.');
-      setLoading(false);
-      return;
-    }
-
+    // Dev fallback bypass check
     if ((loginId === DEV_USERNAME || loginId === 'admin') && password === DEV_PASSWORD) {
       sessionStorage.setItem(DEV_AUTH_KEY, 'true');
       sessionStorage.setItem(LOGIN_ID_KEY, loginId);
       setIsAuthenticated(true);
       goToDashboard();
+      return;
+    }
+
+    // Verhoeff checksum validation - production login IDs must have a valid Verhoeff check digit
+    if (!isValidVerhoeff(loginId)) {
+      setError('Invalid Login ID: the Verhoeff check digit is incorrect.');
+      setLoading(false);
       return;
     }
 

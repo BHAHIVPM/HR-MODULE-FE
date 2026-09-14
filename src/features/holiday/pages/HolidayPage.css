@@ -1,0 +1,33 @@
+.holiday-page {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.holiday-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.holiday-header h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text-primary, #1e293b);
+  margin: 0;
+}
+
+.holiday-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.badge-NATIONAL { background: #fee2e2; color: #991b1b; }
+.badge-FESTIVAL { background: #fef3c7; color: #92400e; }
+.badge-OPTIONAL { background: #e0f2fe; color: #075985; }
+.badge-RESTRICTED { background: #f3e8ff; color: #6b21a8; }
