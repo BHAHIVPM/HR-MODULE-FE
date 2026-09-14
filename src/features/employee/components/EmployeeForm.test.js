@@ -108,6 +108,9 @@ describe('EmployeeForm Component', () => {
 
     await waitFor(() => {
       expect(employeeService.save).toHaveBeenCalledTimes(1);
+    });
+
+    await waitFor(() => {
       expect(handleSuccess).toHaveBeenCalledTimes(1);
     });
   });
@@ -136,6 +139,9 @@ describe('EmployeeForm Component', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Database Exception')).toBeInTheDocument();
+    });
+
+    await waitFor(() => {
       expect(screen.getByText('Could not persist employee record to database.')).toBeInTheDocument();
     });
   });

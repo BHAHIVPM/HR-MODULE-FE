@@ -224,7 +224,7 @@ function AttendancePage() {
             <tbody>
               {attendances.length === 0 ? (
                 <tr>
-                  <td colSpan="9" style={{ textCenter: 'center', padding: '24px' }}>
+                  <td colSpan="9" style={{ textAlign: 'center', padding: '24px' }}>
                     No attendance records found.
                   </td>
                 </tr>

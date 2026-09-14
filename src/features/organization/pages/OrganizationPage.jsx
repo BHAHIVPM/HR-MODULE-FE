@@ -253,7 +253,7 @@ function OrganizationPage() {
             <tbody>
               {filteredDepts.length === 0 ? (
                 <tr>
-                  <td colSpan="6" style={{ textCenter: 'center', padding: '24px' }}>
+                  <td colSpan="6" style={{ textAlign: 'center', padding: '24px' }}>
                     No departments found.
                   </td>
                 </tr>
@@ -297,7 +297,7 @@ function OrganizationPage() {
             <tbody>
               {filteredDesigs.length === 0 ? (
                 <tr>
-                  <td colSpan="6" style={{ textCenter: 'center', padding: '24px' }}>
+                  <td colSpan="6" style={{ textAlign: 'center', padding: '24px' }}>
                     No designations found.
                   </td>
                 </tr>

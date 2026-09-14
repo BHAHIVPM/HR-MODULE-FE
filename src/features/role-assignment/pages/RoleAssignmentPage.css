@@ -1,0 +1,69 @@
+/* Role Assignment Module - Tab Navigation */
+.ra-module {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.ra-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 0 24px;
+  border-bottom: 2px solid var(--border-color, #334155);
+  background: var(--bg-card, #1e293b);
+  overflow-x: auto;
+}
+
+.ra-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--text-muted, #94a3b8);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.ra-tab:hover {
+  color: var(--text-color, #e2e8f0);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.ra-tab-active {
+  color: var(--primary-color, #3b82f6);
+  border-bottom-color: var(--primary-color, #3b82f6);
+}
+
+.ra-tab-icon {
+  font-size: 16px;
+}
+
+.ra-tab-label {
+  font-size: 13px;
+}
+
+.ra-tab-content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .ra-tabs {
+    padding: 0 12px;
+  }
+  .ra-tab {
+    padding: 10px 12px;
+  }
+  .ra-tab-label {
+    display: none;
+  }
+  .ra-tab-icon {
+    font-size: 20px;
+  }
+}

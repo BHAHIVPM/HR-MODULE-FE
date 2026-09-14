@@ -150,7 +150,7 @@ function HolidayPage() {
             <tbody>
               {holidays.length === 0 ? (
                 <tr>
-                  <td colSpan="7" style={{ textCenter: 'center', padding: '24px' }}>
+                  <td colSpan="7" style={{ textAlign: 'center', padding: '24px' }}>
                     No holidays listed for this selection.
                   </td>
                 </tr>
