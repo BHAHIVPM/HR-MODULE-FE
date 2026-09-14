@@ -72,6 +72,9 @@ describe('EmployeeManagementPage Component', () => {
 
     await waitFor(() => {
       expect(screen.getByText('EMP001')).toBeInTheDocument();
+    });
+
+    await waitFor(() => {
       expect(screen.getByText('john.doe@company.com')).toBeInTheDocument();
     });
   });

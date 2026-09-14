@@ -183,7 +183,7 @@ function AssetManagementPage() {
             <tbody>
               {filteredAssets.length === 0 ? (
                 <tr>
-                  <td colSpan="8" style={{ textCenter: 'center', padding: '24px' }}>
+                  <td colSpan="8" style={{ textAlign: 'center', padding: '24px' }}>
                     No assets found.
                   </td>
                 </tr>

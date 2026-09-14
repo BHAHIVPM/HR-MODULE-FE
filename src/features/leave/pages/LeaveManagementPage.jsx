@@ -112,28 +112,53 @@ function LeaveManagementPage() {
     }
   };
 
-  // Manager Approve Action
-  const handleApprove = async (id) => {
-    const approverIdStr = window.prompt('Enter Approver Employee ID:', '1');
-    if (!approverIdStr) return;
-    const remarks = window.prompt('Enter approval remarks (optional):', 'Approved');
-    try {
-      const res = await leaveApplicationService.approve(id, parseInt(approverIdStr, 10), remarks);
-      showSuccess(res?.data?.message || 'Leave application approved!');
-      fetchApplications();
-    } catch (err) {
-      showErrorPopup(err);
-    }
+  // Approval / Rejection Action Modal state
+  const [actionModal, setActionModal] = useState({
+    show: false,
+    type: 'APPROVE', // 'APPROVE' | 'REJECT'
+    applicationId: null,
+    approverId: '1',
+    remarks: '',
+  });
+
+  const openApproveModal = (id) => {
+    setActionModal({
+      show: true,
+      type: 'APPROVE',
+      applicationId: id,
+      approverId: '1',
+      remarks: 'Approved',
+    });
   };
 
-  // Manager Reject Action
-  const handleReject = async (id) => {
-    const approverIdStr = window.prompt('Enter Approver Employee ID:', '1');
-    if (!approverIdStr) return;
-    const remarks = window.prompt('Enter rejection remarks (optional):', 'Rejected');
+  const openRejectModal = (id) => {
+    setActionModal({
+      show: true,
+      type: 'REJECT',
+      applicationId: id,
+      approverId: '1',
+      remarks: 'Rejected',
+    });
+  };
+
+  const handleActionSubmit = async (e) => {
+    e.preventDefault();
+    const { type, applicationId, approverId, remarks } = actionModal;
+    const approverNum = parseInt(approverId, 10);
+    if (isNaN(approverNum) || approverNum <= 0) {
+      showErrorPopup({ title: 'Validation Error', message: 'Please enter a valid numeric Approver ID.' });
+      return;
+    }
+
     try {
-      const res = await leaveApplicationService.reject(id, parseInt(approverIdStr, 10), remarks);
-      showSuccess(res?.data?.message || 'Leave application rejected.');
+      if (type === 'APPROVE') {
+        const res = await leaveApplicationService.approve(applicationId, approverNum, remarks);
+        showSuccess(res?.data?.message || 'Leave application approved!');
+      } else {
+        const res = await leaveApplicationService.reject(applicationId, approverNum, remarks);
+        showSuccess(res?.data?.message || 'Leave application rejected.');
+      }
+      setActionModal((prev) => ({ ...prev, show: false }));
       fetchApplications();
     } catch (err) {
       showErrorPopup(err);
@@ -267,7 +292,7 @@ function LeaveManagementPage() {
             <tbody>
               {filteredApps.length === 0 ? (
                 <tr>
-                  <td colSpan="10" style={{ textCenter: 'center', padding: '24px' }}>
+                  <td colSpan="10" style={{ textAlign: 'center', padding: '24px' }}>
                     No leave applications found.
                   </td>
                 </tr>
@@ -291,8 +316,8 @@ function LeaveManagementPage() {
                       <div className="action-btns">
                         {app.status === 'PENDING' && (
                           <>
-                            <button className="btn-approve" onClick={() => handleApprove(app.leaveApplicationId)}>Approve</button>
-                            <button className="btn-reject" onClick={() => handleReject(app.leaveApplicationId)}>Reject</button>
+                            <button className="btn-approve" onClick={() => openApproveModal(app.leaveApplicationId)}>Approve</button>
+                            <button className="btn-reject" onClick={() => openRejectModal(app.leaveApplicationId)}>Reject</button>
                           </>
                         )}
                         {(app.status === 'PENDING' || app.status === 'APPROVED') && (
@@ -323,7 +348,7 @@ function LeaveManagementPage() {
             <tbody>
               {leaveTypes.length === 0 ? (
                 <tr>
-                  <td colSpan="7" style={{ textCenter: 'center', padding: '24px' }}>
+                  <td colSpan="7" style={{ textAlign: 'center', padding: '24px' }}>
                     No leave types configured.
                   </td>
                 </tr>
@@ -362,6 +387,47 @@ function LeaveManagementPage() {
               )}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Approve / Reject Modal */}
+      {actionModal.show && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h2>{actionModal.type === 'APPROVE' ? 'Approve Leave Application' : 'Reject Leave Application'} #{actionModal.applicationId}</h2>
+              <button className="close-btn" onClick={() => setActionModal((prev) => ({ ...prev, show: false }))}>&times;</button>
+            </div>
+            <form onSubmit={handleActionSubmit}>
+              <div className="form-group">
+                <label>Approver Employee ID *</label>
+                <input
+                  type="number"
+                  required
+                  min="1"
+                  value={actionModal.approverId}
+                  onChange={(e) => setActionModal((prev) => ({ ...prev, approverId: e.target.value }))}
+                />
+              </div>
+              <div className="form-group">
+                <label>Remarks</label>
+                <textarea
+                  rows="3"
+                  value={actionModal.remarks}
+                  onChange={(e) => setActionModal((prev) => ({ ...prev, remarks: e.target.value }))}
+                  placeholder="Enter optional remarks..."
+                />
+              </div>
+              <div className="form-actions">
+                <button type="button" className="btn-secondary" onClick={() => setActionModal((prev) => ({ ...prev, show: false }))}>
+                  Cancel
+                </button>
+                <button type="submit" className={actionModal.type === 'APPROVE' ? 'btn-approve' : 'btn-reject'}>
+                  {actionModal.type === 'APPROVE' ? 'Approve Application' : 'Reject Application'}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 

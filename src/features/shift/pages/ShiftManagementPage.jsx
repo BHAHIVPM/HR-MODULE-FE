@@ -241,7 +241,7 @@ function ShiftManagementPage() {
             <tbody>
               {filteredShifts.length === 0 ? (
                 <tr>
-                  <td colSpan="7" style={{ textCenter: 'center', padding: '24px' }}>
+                  <td colSpan="7" style={{ textAlign: 'center', padding: '24px' }}>
                     No shifts defined yet.
                   </td>
                 </tr>
@@ -287,7 +287,7 @@ function ShiftManagementPage() {
             <tbody>
               {filteredAssignments.length === 0 ? (
                 <tr>
-                  <td colSpan="7" style={{ textCenter: 'center', padding: '24px' }}>
+                  <td colSpan="7" style={{ textAlign: 'center', padding: '24px' }}>
                     No employee shift assignments found.
                   </td>
                 </tr>

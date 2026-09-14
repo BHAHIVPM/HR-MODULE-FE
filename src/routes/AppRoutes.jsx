@@ -22,6 +22,8 @@ import PayrollManagementPage from '../features/payroll/pages/PayrollManagementPa
 import AssetManagementPage from '../features/asset/pages/AssetManagementPage';
 import DocumentManagementPage from '../features/document/pages/DocumentManagementPage';
 import PerformanceReviewPage from '../features/performance/pages/PerformanceReviewPage';
+import RoleAssignmentPage from '../features/role-assignment/pages/RoleAssignmentPage';
+import MenuManagementPage from '../features/menu/pages/MenuManagementPage';
 
 import ServerDownModal from '../components/common/ServerDownModal/ServerDownModal';
 
@@ -54,6 +56,8 @@ function AppRoutes() {
                 <Route path="/documents" element={<DocumentManagementPage />} />
                 <Route path="/performance-reviews" element={<PerformanceReviewPage />} />
                 <Route path="/userData" element={<UserManagementPage />} />
+                <Route path="/role-assignment" element={<RoleAssignmentPage />} />
+                <Route path="/menu-management" element={<MenuManagementPage />} />
                 <Route path="/clients" element={<ClientRegistrationPage />} />
                 <Route path="/registrations/user" element={<UserRegistrationPage />} />
                 <Route path="/registrations/employee" element={<EmployeeRegistrationPage />} />

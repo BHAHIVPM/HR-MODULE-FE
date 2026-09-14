@@ -336,7 +336,7 @@ function PayrollManagementPage() {
             <tbody>
               {payrolls.length === 0 ? (
                 <tr>
-                  <td colSpan="9" style={{ textCenter: 'center', padding: '24px' }}>
+                  <td colSpan="9" style={{ textAlign: 'center', padding: '24px' }}>
                     No payroll transactions generated yet.
                   </td>
                 </tr>
@@ -391,7 +391,7 @@ function PayrollManagementPage() {
             <tbody>
               {salaries.length === 0 ? (
                 <tr>
-                  <td colSpan="10" style={{ textCenter: 'center', padding: '24px' }}>
+                  <td colSpan="10" style={{ textAlign: 'center', padding: '24px' }}>
                     No salary structures configured.
                   </td>
                 </tr>
@@ -460,7 +460,7 @@ function PayrollManagementPage() {
             <tbody>
               {bankDetailsList.length === 0 ? (
                 <tr>
-                  <td colSpan="9" style={{ textCenter: 'center', padding: '24px' }}>
+                  <td colSpan="9" style={{ textAlign: 'center', padding: '24px' }}>
                     No bank details on file.
                   </td>
                 </tr>

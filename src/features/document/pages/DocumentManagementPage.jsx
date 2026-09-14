@@ -161,7 +161,7 @@ function DocumentManagementPage() {
             <tbody>
               {filteredDocs.length === 0 ? (
                 <tr>
-                  <td colSpan="9" style={{ textCenter: 'center', padding: '24px' }}>
+                  <td colSpan="9" style={{ textAlign: 'center', padding: '24px' }}>
                     No document records found.
                   </td>
                 </tr>
