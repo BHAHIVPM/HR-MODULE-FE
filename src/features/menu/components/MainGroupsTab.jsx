@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import mainGroupService from '../services/mainGroupService';
+import { REGISTRATION_ROUTES } from '../../registration/config/moduleRegistrationConfig';
 
 function MainGroupsTab({ mainGroups, setMainGroups, fetchMainGroups, showSuccess, showErrorPopup }) {
+  const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [editingGroup, setEditingGroup] = useState(null);
   const [form, setForm] = useState({ mainGroupName: '', iconPath: '' });
@@ -82,7 +85,7 @@ function MainGroupsTab({ mainGroups, setMainGroups, fetchMainGroups, showSuccess
     <div className="tab-content">
       <div className="tab-header">
         <h2>Main Groups</h2>
-        <button className="btn-primary-action" onClick={() => { setEditingGroup(null); setForm({ mainGroupName: '', iconPath: '' }); setShowModal(true); }}>
+        <button className="btn-primary-action" onClick={() => navigate(REGISTRATION_ROUTES['main-group'])}>
           + Add Main Group
         </button>
       </div>

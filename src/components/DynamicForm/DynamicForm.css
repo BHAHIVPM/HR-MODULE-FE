@@ -158,6 +158,29 @@
   background: var(--slate-100);
 }
 
+.dynamic-form-checkbox {
+  display: flex;
+  align-items: center;
+  min-height: 42px;
+}
+
+.dynamic-form-field .dynamic-form-checkbox input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  accent-color: var(--primary-600);
+  cursor: pointer;
+}
+
+.dynamic-form-field .dynamic-form-checkbox input[type='checkbox']:focus {
+  box-shadow: none;
+  outline: 2px solid var(--primary-600);
+  outline-offset: 2px;
+}
+
 .dynamic-form-hint {
   display: block;
   margin-top: 5px;
@@ -171,6 +194,33 @@
   border-top: 1px solid var(--slate-200);
   display: flex;
   justify-content: flex-end;
+  gap: 12px;
+}
+
+.dynamic-form-cancel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 11px 22px;
+  border: 1px solid var(--slate-200);
+  border-radius: 8px;
+  background: var(--white);
+  color: var(--slate-700);
+  font-size: 14.5px;
+  font-weight: 600;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.dynamic-form-cancel:hover:not(:disabled) {
+  background: var(--slate-50);
+  border-color: var(--slate-300);
+}
+
+.dynamic-form-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .dynamic-form-submit {

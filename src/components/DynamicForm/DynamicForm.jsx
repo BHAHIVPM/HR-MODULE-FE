@@ -8,14 +8,16 @@ import './DynamicForm.css';
  * {
  *   name: string,
  *   label: string,
- *   type: 'text' | 'email' | 'tel' | 'password' | 'date' | 'number' | 'select' | 'textarea',
+ *   type: 'text' | 'email' | 'tel' | 'password' | 'date' | 'time' | 'number' | 'select' | 'textarea' | 'checkbox',
  *   required?: boolean,
  *   placeholder?: string,
  *   maxLength?: number,
  *   minLength?: number,
- *   options?: { value: string, label: string }[],
- *   defaultValue?: string,
+ *   options?: { value: string, label: string }[] | ((lookups) => { value: string, label: string }[]),
+ *   defaultValue?: string | number | boolean,
  *   colSpan?: 1 | 2,  // grid column span (default 1)
+ *   hint?: string,
+ *   rows?: number,    // textarea rows
  * }
  */
 function DynamicForm({
@@ -27,6 +29,8 @@ function DynamicForm({
   success = null,
   title,
   subtitle,
+  cancelLabel,
+  onCancel,
 }) {
   const initialValues = fields.reduce((acc, field) => {
     acc[field.name] = field.defaultValue ?? '';
@@ -93,7 +97,7 @@ function DynamicForm({
                   disabled={loading}
                   required={field.required}
                 >
-                  <option value="">Select…</option>
+                  <option value="">{field.placeholder || 'Select…'}</option>
                   {field.options?.map((opt) => (
                     <option key={opt.value} value={opt.value}>
                       {opt.label}
@@ -111,6 +115,17 @@ function DynamicForm({
                   required={field.required}
                   rows={field.rows ?? 3}
                 />
+              ) : field.type === 'checkbox' ? (
+                <div className="dynamic-form-checkbox">
+                  <input
+                    id={field.name}
+                    name={field.name}
+                    type="checkbox"
+                    checked={!!values[field.name]}
+                    onChange={(e) => handleChange(field.name, e.target.checked)}
+                    disabled={loading}
+                  />
+                </div>
               ) : field.type === 'password' ? (
                 <div className="dynamic-form-input-wrap">
                   <input
@@ -157,6 +172,16 @@ function DynamicForm({
         </div>
 
         <div className="dynamic-form-actions">
+          {cancelLabel && (
+            <button
+              type="button"
+              className="dynamic-form-cancel"
+              onClick={onCancel}
+              disabled={loading}
+            >
+              {cancelLabel}
+            </button>
+          )}
           <button type="submit" className="dynamic-form-submit" disabled={loading}>
             {loading && <span className="dynamic-form-spinner" aria-hidden="true" />}
             {loading ? 'Submitting…' : submitLabel}

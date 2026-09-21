@@ -1,0 +1,28 @@
+
+> hr-module-fe@0.1.0 build
+> react-scripts build
+
+(node:25344) [DEP0176] DeprecationWarning: fs.F_OK is deprecated, use fs.constants.F_OK instead
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Creating an optimized production build...
+Compiled successfully.
+
+File sizes after gzip:
+
+  138.32 kB  build\static\js\main.677608ca.js
+  14.15 kB   build\static\css\main.b87d6357.css
+  1.76 kB    build\static\js\453.5d59523f.chunk.js
+
+The project was built assuming it is hosted at /.
+You can control this with the homepage field in your package.json.
+
+The build folder is ready to be deployed.
+You may serve it with a static server:
+
+  npm install -g serve
+  serve -s build
+
+Find out more about deployment here:
+
+  https://cra.link/deployment
+

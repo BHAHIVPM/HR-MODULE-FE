@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useNotification } from '../../../context/NotificationContext';
 import roleService from '../services/roleService';
+import { REGISTRATION_ROUTES } from '../../registration/config/moduleRegistrationConfig';
 import './RoleCreationPage.css';
 
 const ROLE_CATEGORIES = [
@@ -21,6 +23,7 @@ function RoleCreationPage() {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deletingRole, setDeletingRole] = useState(null);
   const { showSuccess, showErrorPopup } = useNotification();
+  const navigate = useNavigate();
 
   const loadRoles = useCallback(async () => {
     setLoading(true);
@@ -38,9 +41,7 @@ function RoleCreationPage() {
   useEffect(() => { loadRoles(); }, [loadRoles]);
 
   const openCreateModal = () => {
-    setEditingRole(null);
-    setFormData({ roleName: '', remarks: '', roleCategory: '', system: false, editable: true, assignment: false });
-    setModalOpen(true);
+    navigate(REGISTRATION_ROUTES.role);
   };
 
   const openEditModal = (role) => {

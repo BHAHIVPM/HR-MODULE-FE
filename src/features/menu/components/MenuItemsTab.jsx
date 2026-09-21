@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import menuService from '../services/menuService';
 import MenuItemModal from './MenuItemModal';
+import { REGISTRATION_ROUTES } from '../../registration/config/moduleRegistrationConfig';
 
 function MenuItemsTab({ menuItems, mainGroups, subGroups, fetchMenuItems, showSuccess, showErrorPopup }) {
+  const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [form, setForm] = useState({ menuName: '', componentPath: '', mainGroupId: '', subGroupId: '', addOption: 'YES', editOption: 'YES', deleteOption: 'YES', isPrivilege: 'NO' });
@@ -79,7 +82,7 @@ function MenuItemsTab({ menuItems, mainGroups, subGroups, fetchMenuItems, showSu
             <option value="">All Main Groups</option>
             {mainGroups.map(g => <option key={g.mainGroupId} value={g.mainGroupId}>{g.mainGroupName}</option>)}
           </select>
-          <button className="btn-primary-action" onClick={() => { setEditingItem(null); setForm({ menuName: '', componentPath: '', mainGroupId: '', subGroupId: '', addOption: 'YES', editOption: 'YES', deleteOption: 'YES', isPrivilege: 'NO' }); setShowModal(true); }}>+ Add Menu Item</button>
+          <button className="btn-primary-action" onClick={() => navigate(REGISTRATION_ROUTES['menu-item'])}>+ Add Menu Item</button>
         </div>
       </div>
       <div className="table-container">

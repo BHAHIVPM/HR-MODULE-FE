@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import performanceReviewService from '../services/performanceReviewService';
+import { REGISTRATION_ROUTES } from '../../registration/config/moduleRegistrationConfig';
 import { useNotification } from '../../../context/NotificationContext';
 import './PerformanceReviewPage.css';
 
 function PerformanceReviewPage() {
   const { showSuccess, showErrorPopup } = useNotification();
+  const navigate = useNavigate();
 
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -142,22 +145,7 @@ function PerformanceReviewPage() {
         <h1>Performance Reviews & Appraisals</h1>
         <button
           className="btn-primary-action"
-          onClick={() => {
-            setSelectedReview(null);
-            setFormData({
-              employeeId: '',
-              reviewerId: '',
-              reviewCycle: '2026-H1',
-              reviewPeriodStart: `${new Date().getFullYear()}-01-01`,
-              reviewPeriodEnd: `${new Date().getFullYear()}-06-30`,
-              achievements: '',
-              strengths: '',
-              areasOfImprovement: '',
-              goalsForNextCycle: '',
-              status: 'DRAFT',
-            });
-            setShowModal(true);
-          }}
+          onClick={() => navigate(REGISTRATION_ROUTES['performance-review'])}
         >
           + Initiate Performance Review
         </button>

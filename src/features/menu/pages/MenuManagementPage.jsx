@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import mainGroupService from '../services/mainGroupService';
 import menuService from '../services/menuService';
 import subGroupService from '../services/subGroupService';
@@ -11,7 +12,8 @@ import './MenuManagementPage.css';
 
 function MenuManagementPage() {
   const { showSuccess, showErrorPopup } = useNotification();
-  const [activeTab, setActiveTab] = useState('mainGroups');
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'mainGroups');
   const [loading, setLoading] = useState(false);
   const [mainGroups, setMainGroups] = useState([]);
   const [menuItems, setMenuItems] = useState([]);

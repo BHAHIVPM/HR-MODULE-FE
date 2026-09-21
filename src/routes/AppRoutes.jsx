@@ -10,6 +10,7 @@ import UserManagementPage from '../features/user/pages/UserManagementPage';
 import UserRegistrationPage from '../features/registration/pages/UserRegistrationPage';
 import EmployeeRegistrationPage from '../features/registration/pages/EmployeeRegistrationPage';
 import ClientRegistrationPage from '../features/registration/pages/ClientRegistrationPage';
+import ModuleRegistrationPage from '../features/registration/pages/ModuleRegistrationPage';
 import ProtectedRoute from './ProtectedRoute';
 import MainLayout from '../layouts/MainLayout';
 
@@ -62,6 +63,7 @@ function AppRoutes() {
                 <Route path="/registrations/user" element={<UserRegistrationPage />} />
                 <Route path="/registrations/employee" element={<EmployeeRegistrationPage />} />
                 <Route path="/registrations/client" element={<ClientRegistrationPage />} />
+                <Route path="/registrations/:moduleKey" element={<ModuleRegistrationPage />} />
               </Route>
             </Routes>
           </BrowserRouter>

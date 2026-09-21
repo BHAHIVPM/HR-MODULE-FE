@@ -1,12 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import departmentService from '../services/departmentService';
 import designationService from '../services/designationService';
+import { REGISTRATION_ROUTES } from '../../registration/config/moduleRegistrationConfig';
 import { useNotification } from '../../../context/NotificationContext';
 import './OrganizationPage.css';
 
 function OrganizationPage() {
   const { showSuccess, showErrorPopup } = useNotification();
-  const [activeTab, setActiveTab] = useState('departments'); // 'departments' | 'designations'
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'departments'); // 'departments' | 'designations'
   
   const [departments, setDepartments] = useState([]);
   const [designations, setDesignations] = useState([]);
@@ -201,34 +205,14 @@ function OrganizationPage() {
         {activeTab === 'departments' ? (
           <button
             className="btn-primary-action"
-            onClick={() => {
-              setSelectedDept(null);
-              setDeptForm({
-                departmentCode: '',
-                departmentName: '',
-                departmentHeadId: '',
-                description: '',
-                status: 'ACTIVE',
-              });
-              setShowDeptModal(true);
-            }}
+            onClick={() => navigate(REGISTRATION_ROUTES.department)}
           >
             + Add Department
           </button>
         ) : (
           <button
             className="btn-primary-action"
-            onClick={() => {
-              setSelectedDesig(null);
-              setDesigForm({
-                designationCode: '',
-                designationName: '',
-                departmentId: '',
-                gradeLevel: '',
-                status: 'ACTIVE',
-              });
-              setShowDesigModal(true);
-            }}
+            onClick={() => navigate(REGISTRATION_ROUTES.designation)}
           >
             + Add Designation
           </button>

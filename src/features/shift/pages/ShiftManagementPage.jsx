@@ -1,12 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import shiftService from '../services/shiftService';
 import employeeShiftService from '../services/employeeShiftService';
+import { REGISTRATION_ROUTES } from '../../registration/config/moduleRegistrationConfig';
 import { useNotification } from '../../../context/NotificationContext';
 import './ShiftManagementPage.css';
 
 function ShiftManagementPage() {
   const { showSuccess, showErrorPopup } = useNotification();
-  const [activeTab, setActiveTab] = useState('shifts'); // 'shifts' | 'assignments'
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'shifts'); // 'shifts' | 'assignments'
 
   const [shifts, setShifts] = useState([]);
   const [employeeShifts, setEmployeeShifts] = useState([]);
@@ -187,35 +191,14 @@ function ShiftManagementPage() {
         {activeTab === 'shifts' ? (
           <button
             className="btn-primary-action"
-            onClick={() => {
-              setSelectedShift(null);
-              setShiftForm({
-                shiftCode: '',
-                shiftName: '',
-                startTime: '09:00',
-                endTime: '18:00',
-                breakDurationMinutes: 60,
-                weeklyOffDays: 'SATURDAY,SUNDAY',
-                status: 'ACTIVE',
-              });
-              setShowShiftModal(true);
-            }}
+            onClick={() => navigate(REGISTRATION_ROUTES.shift)}
           >
             + Create New Shift
           </button>
         ) : (
           <button
             className="btn-primary-action"
-            onClick={() => {
-              setAssignForm({
-                employeeId: '',
-                shiftId: shifts[0]?.shiftId || '',
-                effectiveFrom: new Date().toISOString().split('T')[0],
-                effectiveTo: '',
-                status: 'ACTIVE',
-              });
-              setShowAssignModal(true);
-            }}
+            onClick={() => navigate(REGISTRATION_ROUTES['employee-shift'])}
           >
             + Assign Shift to Employee
           </button>

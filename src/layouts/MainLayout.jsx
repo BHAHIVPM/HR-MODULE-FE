@@ -4,6 +4,10 @@ import { useSessionTimeout } from '../hooks/useSessionTimeout';
 import SessionWarningModal from '../components/SessionWarningModal/SessionWarningModal';
 import AppHeader from '../components/AppHeader/AppHeader';
 import mainGroupService from '../features/menu/services/mainGroupService';
+import {
+  MODULE_REGISTRATIONS,
+  resolveAddPath,
+} from '../features/registration/config/moduleRegistrationConfig';
 import './MainLayout.css';
 
 const NAV_ITEMS = [
@@ -15,6 +19,7 @@ const NAV_ITEMS = [
   {
     label: 'Menu Management',
     listPath: '/menu-management',
+    formPath: '/registrations/main-group',
     icon: MenuIcon,
   },
   {
@@ -26,46 +31,55 @@ const NAV_ITEMS = [
   {
     label: 'Organization',
     listPath: '/organization',
+    formPath: '/registrations/department',
     icon: OrganizationIcon,
   },
   {
     label: 'Shifts & Rosters',
     listPath: '/shifts',
+    formPath: '/registrations/shift',
     icon: ShiftIcon,
   },
   {
     label: 'Attendance',
     listPath: '/attendance',
+    formPath: '/registrations/attendance',
     icon: AttendanceIcon,
   },
   {
     label: 'Leaves',
     listPath: '/leaves',
+    formPath: '/registrations/leave-application',
     icon: LeaveIcon,
   },
   {
     label: 'Holidays',
     listPath: '/holidays',
+    formPath: '/registrations/holiday',
     icon: HolidayIcon,
   },
   {
     label: 'Payroll & Salary',
     listPath: '/payroll-management',
+    formPath: '/registrations/salary-structure',
     icon: PayrollIcon,
   },
   {
     label: 'Assets',
     listPath: '/assets',
+    formPath: '/registrations/asset',
     icon: AssetIcon,
   },
   {
     label: 'Documents',
     listPath: '/documents',
+    formPath: '/registrations/document',
     icon: DocumentIcon,
   },
   {
     label: 'Appraisals',
     listPath: '/performance-reviews',
+    formPath: '/registrations/performance-review',
     icon: PerformanceIcon,
   },
   {
@@ -77,6 +91,7 @@ const NAV_ITEMS = [
   {
     label: 'Role Assignment',
     listPath: '/role-assignment',
+    formPath: '/registrations/role',
     icon: RoleAssignmentIcon,
   },
   {
@@ -168,14 +183,29 @@ function renderBackendNav(menu, location) {
                 .filter((item) => item.canView !== false)
                 .map((item) => {
                   const isActive = !!item.componentPath && location.pathname === item.componentPath;
+                  const addPath = resolveAddPath(item.componentPath);
+                  // Backend menu items expose the user's add privilege via canAdd.
+                  const showAdd = !!addPath && item.canAdd !== false;
+                  const isAddActive = showAdd && location.pathname === addPath;
                   return (
-                    <li key={`it-${item.menuNameId}`}>
+                    <li key={`it-${item.menuNameId}`} className="sidebar-sublink-row">
                       <Link
                         to={item.componentPath || '#'}
                         className={`sidebar-sublink ${isActive ? 'sidebar-sublink-active' : ''}`}
                       >
                         {item.menuName}
                       </Link>
+                      {showAdd && (
+                        <Link
+                          to={addPath}
+                          className={`sidebar-add-btn sidebar-add-btn-sm ${isAddActive ? 'sidebar-add-btn-active' : ''}`}
+                          title={`Register / Add ${item.menuName}`}
+                          aria-label={`Add ${item.menuName}`}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          +
+                        </Link>
+                      )}
                     </li>
                   );
                 })}
@@ -271,6 +301,11 @@ function getPageTitle(pathname) {
   if (pathname === '/registrations/user') return 'User Registration';
   if (pathname === '/registrations/employee') return 'Employee Registration';
   if (pathname === '/registrations/client') return 'Client Registration';
+  if (pathname.startsWith('/registrations/')) {
+    const moduleKey = pathname.replace('/registrations/', '');
+    const config = MODULE_REGISTRATIONS[moduleKey];
+    return config ? config.pageTitle : 'Registration';
+  }
   return 'HR Module';
 }
 

@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import documentService from '../services/documentService';
+import { REGISTRATION_ROUTES } from '../../registration/config/moduleRegistrationConfig';
 import { useNotification } from '../../../context/NotificationContext';
 import './DocumentManagementPage.css';
 
 function DocumentManagementPage() {
   const { showSuccess, showErrorPopup } = useNotification();
+  const navigate = useNavigate();
 
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -99,20 +102,7 @@ function DocumentManagementPage() {
         <h1>Employee Document Vault</h1>
         <button
           className="btn-primary-action"
-          onClick={() => {
-            setSelectedDoc(null);
-            setFormData({
-              employeeId: '',
-              documentType: 'ID_PROOF',
-              documentName: '',
-              documentNumber: '',
-              filePath: '',
-              issuedDate: '',
-              expiryDate: '',
-              status: 'ACTIVE',
-            });
-            setShowModal(true);
-          }}
+          onClick={() => navigate(REGISTRATION_ROUTES.document)}
         >
           + Add Document Record
         </button>

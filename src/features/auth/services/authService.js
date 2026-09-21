@@ -64,6 +64,13 @@ const authService = {
   logout: () => axiosClient.post('/auth/logout'),
 
   /**
+   * Validate the CURRENT token (Access_token cookie or Bearer header).
+   * GET /auth/auth-me - 200 + true when valid, 401 + false when missing/expired/tampered.
+   * @returns {Promise}
+   */
+  authMe: () => axiosClient.get('/auth/auth-me'),
+
+  /**
    * Fetch current authenticated user's metadata.
    * @returns {Promise}
    */
