@@ -100,8 +100,18 @@
   font-size: 16px;
   font-weight: 600;
   line-height: 1;
+  text-decoration: none;
   cursor: pointer;
   transition: all 0.15s ease;
+}
+
+/* Compact "+" action rendered next to a backend menu item */
+.sidebar-add-btn-sm {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  margin-right: 4px;
+  font-size: 14px;
 }
 
 .sidebar-add-btn:hover {
@@ -211,6 +221,16 @@
   text-decoration: none;
   transition: background 0.15s ease, color 0.15s ease;
   position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Row wrapper so backend menu items can render a "+" registration action */
+.sidebar-sublink-row {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .sidebar-sublink::before {

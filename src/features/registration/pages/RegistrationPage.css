@@ -3,6 +3,49 @@
   animation: pageSlideIn 0.3s ease;
 }
 
+.registration-unknown {
+  background: var(--white);
+  border: 1px solid var(--slate-200);
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: var(--shadow-sm);
+}
+
+.registration-unknown h2 {
+  margin: 0 0 8px;
+  font-family: var(--font-display);
+  font-size: 20px;
+  color: var(--slate-900);
+}
+
+.registration-unknown p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--slate-600);
+}
+
+.registration-back-link {
+  display: inline-block;
+  margin-top: 18px;
+  padding: 10px 22px;
+  border-radius: 8px;
+  background: var(--primary-600);
+  color: var(--white);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.registration-back-link:hover {
+  background: var(--primary-700);
+}
+
+.registration-lookup-hint {
+  margin: 12px 0 0;
+  font-size: 12.5px;
+  color: var(--slate-500);
+}
+
 @keyframes pageSlideIn {
   from {
     opacity: 0;

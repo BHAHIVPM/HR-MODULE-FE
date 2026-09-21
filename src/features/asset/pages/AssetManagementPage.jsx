@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import assetService from '../services/assetService';
+import { REGISTRATION_ROUTES } from '../../registration/config/moduleRegistrationConfig';
 import { useNotification } from '../../../context/NotificationContext';
 import './AssetManagementPage.css';
 
 function AssetManagementPage() {
   const { showSuccess, showErrorPopup } = useNotification();
+  const navigate = useNavigate();
 
   const [assets, setAssets] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -121,19 +124,7 @@ function AssetManagementPage() {
         <h1>Company Asset Management</h1>
         <button
           className="btn-primary-action"
-          onClick={() => {
-            setSelectedAsset(null);
-            setAssetForm({
-              assetCode: '',
-              assetName: '',
-              assetType: 'LAPTOP',
-              serialNumber: '',
-              assetCondition: 'NEW',
-              status: 'AVAILABLE',
-              remarks: '',
-            });
-            setShowAssetModal(true);
-          }}
+          onClick={() => navigate(REGISTRATION_ROUTES.asset)}
         >
           + Register New Asset
         </button>

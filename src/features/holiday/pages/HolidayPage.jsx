@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import holidayService from '../services/holidayService';
+import { REGISTRATION_ROUTES } from '../../registration/config/moduleRegistrationConfig';
 import { useNotification } from '../../../context/NotificationContext';
 import './HolidayPage.css';
 
 function HolidayPage() {
   const { showSuccess, showErrorPopup } = useNotification();
+  const navigate = useNavigate();
   
   const [holidays, setHolidays] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -93,18 +96,7 @@ function HolidayPage() {
         <h1>Holiday Calendar Management</h1>
         <button
           className="btn-primary-action"
-          onClick={() => {
-            setSelectedHoliday(null);
-            setFormData({
-              holidayName: '',
-              holidayDate: new Date().toISOString().split('T')[0],
-              holidayType: 'NATIONAL',
-              location: 'ALL',
-              description: '',
-              status: 'ACTIVE',
-            });
-            setShowModal(true);
-          }}
+          onClick={() => navigate(REGISTRATION_ROUTES.holiday)}
         >
           + Add New Holiday
         </button>

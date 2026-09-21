@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import employeeService from '../services/employeeService';
 import EmployeeForm from '../components/EmployeeForm';
+import { REGISTRATION_ROUTES } from '../../registration/config/moduleRegistrationConfig';
 import { useNotification } from '../../../context/NotificationContext';
 import './EmployeeManagementPage.css';
 
 function EmployeeManagementPage() {
   const { showSuccess, showErrorPopup } = useNotification();
+  const navigate = useNavigate();
 
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -126,8 +129,7 @@ function EmployeeManagementPage() {
               if (showForm) {
                 handleFormCancel();
               } else {
-                setSelectedEmployee(null);
-                setShowForm(true);
+                navigate(REGISTRATION_ROUTES.employee);
               }
             }}
           >

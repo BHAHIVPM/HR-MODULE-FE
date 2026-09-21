@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import attendanceService from '../services/attendanceService';
+import { REGISTRATION_ROUTES } from '../../registration/config/moduleRegistrationConfig';
 import { useNotification } from '../../../context/NotificationContext';
 import './AttendancePage.css';
 
 function AttendancePage() {
   const { showSuccess, showErrorPopup } = useNotification();
+  const navigate = useNavigate();
   
   const [attendances, setAttendances] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -134,19 +137,7 @@ function AttendancePage() {
         <h1>Attendance Management</h1>
         <button
           className="btn-primary-action"
-          onClick={() => {
-            setSelectedRecord(null);
-            setFormData({
-              employeeId: '',
-              attendanceDate: new Date().toISOString().split('T')[0],
-              checkInTime: '09:00',
-              checkOutTime: '18:00',
-              workedHours: '9.0',
-              status: 'PRESENT',
-              remarks: '',
-            });
-            setShowModal(true);
-          }}
+          onClick={() => navigate(REGISTRATION_ROUTES.attendance)}
         >
           + Log Attendance Record
         </button>

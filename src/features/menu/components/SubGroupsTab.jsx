@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import subGroupService from '../services/subGroupService';
+import { REGISTRATION_ROUTES } from '../../registration/config/moduleRegistrationConfig';
 
 function SubGroupsTab({ subGroups, fetchSubGroups, showSuccess, showErrorPopup }) {
+  const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ subGroupName: '' });
 
@@ -26,7 +29,7 @@ function SubGroupsTab({ subGroups, fetchSubGroups, showSuccess, showErrorPopup }
     <div className="tab-content">
       <div className="tab-header">
         <h2>Sub Groups</h2>
-        <button className="btn-primary-action" onClick={() => { setForm({ subGroupName: '' }); setShowModal(true); }}>
+        <button className="btn-primary-action" onClick={() => navigate(REGISTRATION_ROUTES['sub-group'])}>
           + Add Sub Group
         </button>
       </div>

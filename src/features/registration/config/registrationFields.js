@@ -1,15 +1,5 @@
 export const userRegistrationFields = [
   {
-    name: 'userId',
-    label: 'User ID (Login ID)',
-    type: 'text',
-    required: true,
-    maxLength: 12,
-    placeholder: '12-digit login ID',
-    hint: 'First 4 digits identify the client (tenant)',
-    colSpan: 2,
-  },
-  {
     name: 'name',
     label: 'Full Name',
     type: 'text',

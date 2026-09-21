@@ -1,12 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import leaveMasterService from '../services/leaveMasterService';
 import leaveApplicationService from '../services/leaveApplicationService';
+import { REGISTRATION_ROUTES } from '../../registration/config/moduleRegistrationConfig';
 import { useNotification } from '../../../context/NotificationContext';
 import './LeaveManagementPage.css';
 
 function LeaveManagementPage() {
   const { showSuccess, showErrorPopup } = useNotification();
-  const [activeTab, setActiveTab] = useState('applications'); // 'applications' | 'types'
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'applications'); // 'applications' | 'types'
 
   const [leaveTypes, setLeaveTypes] = useState([]);
   const [applications, setApplications] = useState([]);
@@ -233,18 +237,7 @@ function LeaveManagementPage() {
             </div>
             <button
               className="btn-primary-action"
-              onClick={() => {
-                setApplyForm({
-                  employeeId: '',
-                  leaveTypeId: leaveTypes[0]?.leaveTypeId || '',
-                  fromDate: new Date().toISOString().split('T')[0],
-                  toDate: new Date().toISOString().split('T')[0],
-                  noOfDays: 1,
-                  reason: '',
-                  status: 'PENDING',
-                });
-                setShowApplyModal(true);
-              }}
+              onClick={() => navigate(REGISTRATION_ROUTES['leave-application'])}
             >
               + Apply For Leave
             </button>
@@ -252,18 +245,7 @@ function LeaveManagementPage() {
         ) : (
           <button
             className="btn-primary-action"
-            onClick={() => {
-              setSelectedType(null);
-              setTypeForm({
-                leaveTypeCode: '',
-                leaveTypeName: '',
-                defaultDaysPerYear: 12,
-                carryForwardAllowed: false,
-                maxCarryForwardDays: 0,
-                status: 'ACTIVE',
-              });
-              setShowTypeModal(true);
-            }}
+            onClick={() => navigate(REGISTRATION_ROUTES['leave-type'])}
           >
             + Create Leave Type
           </button>

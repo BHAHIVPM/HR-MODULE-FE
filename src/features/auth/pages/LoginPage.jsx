@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LoginForm from '../components/LoginForm';
 import authService from '../services/authService';
@@ -15,7 +15,7 @@ function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [exiting, setExiting] = useState(false);
   const navigate = useNavigate();
-  const { setIsAuthenticated } = useAuth();
+  const { setIsAuthenticated, isAuthenticated, checking } = useAuth();
 
   const goToDashboard = () => {
     setExiting(true);
@@ -23,6 +23,15 @@ function LoginPage() {
       navigate('/dashboard', { state: { fromLogin: true } });
     }, 280);
   };
+
+  // GET /auth/auth-me already validated the token when the app booted.
+  // If it succeeded, the login process is skipped and the page goes
+  // straight to the dashboard.
+  useEffect(() => {
+    if (!checking && isAuthenticated) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [checking, isAuthenticated, navigate]);
 
   const handleLogin = async (credentials) => {
     setLoading(true);

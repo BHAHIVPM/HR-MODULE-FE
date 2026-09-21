@@ -1,13 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import salaryService from '../services/salaryService';
 import payrollService from '../services/payrollService';
 import bankDetailsService from '../services/bankDetailsService';
+import { REGISTRATION_ROUTES } from '../../registration/config/moduleRegistrationConfig';
 import { useNotification } from '../../../context/NotificationContext';
 import './PayrollManagementPage.css';
 
 function PayrollManagementPage() {
   const { showSuccess, showErrorPopup } = useNotification();
-  const [activeTab, setActiveTab] = useState('payroll'); // 'payroll' | 'salary' | 'bank'
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'payroll'); // 'payroll' | 'salary' | 'bank'
 
   const [payrolls, setPayrolls] = useState([]);
   const [salaries, setSalaries] = useState([]);
@@ -268,25 +272,7 @@ function PayrollManagementPage() {
         {activeTab === 'salary' && (
           <button
             className="btn-primary-action"
-            onClick={() => {
-              setSelectedSalary(null);
-              setSalaryForm({
-                employeeId: '',
-                basicSalary: 30000,
-                hra: 12000,
-                conveyanceAllowance: 2000,
-                medicalAllowance: 1500,
-                specialAllowance: 5000,
-                otherAllowance: 0,
-                providentFund: 3600,
-                professionalTax: 200,
-                incomeTax: 1000,
-                otherDeductions: 0,
-                effectiveFrom: new Date().toISOString().split('T')[0],
-                status: 'ACTIVE',
-              });
-              setShowSalaryModal(true);
-            }}
+            onClick={() => navigate(REGISTRATION_ROUTES['salary-structure'])}
           >
             + Create Salary Structure
           </button>
@@ -294,21 +280,7 @@ function PayrollManagementPage() {
         {activeTab === 'bank' && (
           <button
             className="btn-primary-action"
-            onClick={() => {
-              setSelectedBank(null);
-              setBankForm({
-                employeeId: '',
-                bankName: '',
-                branchName: '',
-                accountNumber: '',
-                ifscCode: '',
-                accountHolderName: '',
-                accountType: 'SAVINGS',
-                isPrimary: true,
-                status: 'ACTIVE',
-              });
-              setShowBankModal(true);
-            }}
+            onClick={() => navigate(REGISTRATION_ROUTES['bank-details'])}
           >
             + Add Bank Account
           </button>

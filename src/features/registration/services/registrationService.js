@@ -8,7 +8,6 @@ import axiosClient from '../../../api/axiosClient';
 const registrationService = {
   registerUser: (data) =>
     userService.save({
-      userId: data.userId,
       name: data.name || data.userName,
       userMail: data.userMail,
       mobileNo: data.mobileNo,
