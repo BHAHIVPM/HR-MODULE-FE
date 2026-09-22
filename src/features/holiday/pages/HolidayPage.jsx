@@ -54,10 +54,10 @@ function HolidayPage() {
     try {
       if (selectedHoliday) {
         const res = await holidayService.update(selectedHoliday.holidayId, formData);
-        showSuccess(res?.data?.message || 'Holiday updated successfully.');
+        showSuccess(res?.data?.message || 'Holiday updated successfully.', res?.data?.header || 'Success');
       } else {
         const res = await holidayService.save(formData);
-        showSuccess(res?.data?.message || 'Holiday saved successfully.');
+        showSuccess(res?.data?.message || 'Holiday saved successfully.', res?.data?.header || 'Success');
       }
       setShowModal(false);
       loadHolidays();
@@ -83,7 +83,7 @@ function HolidayPage() {
     if (!window.confirm(`Delete holiday ${name}?`)) return;
     try {
       const res = await holidayService.delete(id);
-      showSuccess(res?.data?.message || 'Holiday deleted.');
+      showSuccess(res?.data?.message || 'Holiday deleted.', res?.data?.header || 'Success');
       loadHolidays();
     } catch (err) {
       showErrorPopup(err);

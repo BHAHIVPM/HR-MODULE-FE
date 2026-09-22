@@ -80,10 +80,10 @@ function ShiftManagementPage() {
 
       if (selectedShift) {
         const res = await shiftService.update(selectedShift.shiftId, payload);
-        showSuccess(res?.data?.message || 'Shift timing updated.');
+        showSuccess(res?.data?.message || 'Shift timing updated.', res?.data?.header || 'Success');
       } else {
         const res = await shiftService.save(payload);
-        showSuccess(res?.data?.message || 'New shift created.');
+        showSuccess(res?.data?.message || 'New shift created.', res?.data?.header || 'Success');
       }
       setShowShiftModal(false);
       fetchShifts();
@@ -103,7 +103,7 @@ function ShiftManagementPage() {
       };
 
       const res = await employeeShiftService.assign(payload);
-      showSuccess(res?.data?.message || 'Shift assigned to employee successfully.');
+      showSuccess(res?.data?.message || 'Shift assigned to employee successfully.', res?.data?.header || 'Success');
       setShowAssignModal(false);
       fetchEmployeeShifts();
     } catch (err) {
@@ -129,7 +129,7 @@ function ShiftManagementPage() {
     if (!window.confirm(`Delete shift ${name}?`)) return;
     try {
       const res = await shiftService.delete(id);
-      showSuccess(res?.data?.message || 'Shift deleted.');
+      showSuccess(res?.data?.message || 'Shift deleted.', res?.data?.header || 'Success');
       fetchShifts();
     } catch (err) {
       showErrorPopup(err);
@@ -140,7 +140,7 @@ function ShiftManagementPage() {
     if (!window.confirm(`Remove shift assignment #${id}?`)) return;
     try {
       const res = await employeeShiftService.delete(id);
-      showSuccess(res?.data?.message || 'Shift assignment removed.');
+      showSuccess(res?.data?.message || 'Shift assignment removed.', res?.data?.header || 'Success');
       fetchEmployeeShifts();
     } catch (err) {
       showErrorPopup(err);

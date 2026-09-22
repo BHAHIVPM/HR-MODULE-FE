@@ -62,7 +62,7 @@ function AttendancePage() {
     if (!quickEmpId) return;
     try {
       const res = await attendanceService.checkIn(quickEmpId);
-      showSuccess(res?.data?.message || `Checked IN Employee #${quickEmpId}`);
+      showSuccess(res?.data?.message || `Checked IN Employee #${quickEmpId}`, res?.data?.header || 'Success');
       setQuickEmpId('');
       loadAllAttendance();
     } catch (err) {
@@ -75,7 +75,7 @@ function AttendancePage() {
     if (!quickEmpId) return;
     try {
       const res = await attendanceService.checkOut(quickEmpId);
-      showSuccess(res?.data?.message || `Checked OUT Employee #${quickEmpId}`);
+      showSuccess(res?.data?.message || `Checked OUT Employee #${quickEmpId}`, res?.data?.header || 'Success');
       setQuickEmpId('');
       loadAllAttendance();
     } catch (err) {
@@ -94,10 +94,10 @@ function AttendancePage() {
 
       if (selectedRecord) {
         const res = await attendanceService.update(selectedRecord.attendanceId, payload);
-        showSuccess(res?.data?.message || 'Attendance record updated.');
+        showSuccess(res?.data?.message || 'Attendance record updated.', res?.data?.header || 'Success');
       } else {
         const res = await attendanceService.save(payload);
-        showSuccess(res?.data?.message || 'Attendance record logged.');
+        showSuccess(res?.data?.message || 'Attendance record logged.', res?.data?.header || 'Success');
       }
       setShowModal(false);
       loadAllAttendance();
@@ -124,7 +124,7 @@ function AttendancePage() {
     if (!window.confirm(`Delete attendance record #${id}?`)) return;
     try {
       const res = await attendanceService.delete(id);
-      showSuccess(res?.data?.message || 'Attendance record deleted.');
+      showSuccess(res?.data?.message || 'Attendance record deleted.', res?.data?.header || 'Success');
       loadAllAttendance();
     } catch (err) {
       showErrorPopup(err);

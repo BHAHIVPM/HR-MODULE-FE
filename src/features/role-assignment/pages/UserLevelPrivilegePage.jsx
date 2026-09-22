@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { useNotification } from '../../../context/NotificationContext';
 import roleAssignmentService from '../services/roleAssignmentService';
 import userLevelPrivilegeService from '../services/userLevelPrivilegeService';
+import useCurrentUser from '../../../hooks/useCurrentUser';
 import './RoleCreationPage.css';
 
 function UserLevelPrivilegePage() {
@@ -13,6 +14,9 @@ function UserLevelPrivilegePage() {
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const { showSuccess, showErrorPopup } = useNotification();
+  // Self-edit protection: the logged-in user cannot override their own
+  // user-level privileges.
+  const { isSelfId } = useCurrentUser();
 
   const handleSearch = useCallback(async () => {
     if (!searchLoginId.trim()) return;
@@ -38,13 +42,17 @@ function UserLevelPrivilegePage() {
     finally { setLoading(false); }
   }, [searchLoginId, showErrorPopup]);
 
+  // True when the privileges being viewed/edited belong to the logged-in user.
+  const isSelfSearched = userInfo ? isSelfId(userInfo.loginId) : false;
+
   const updatePrivilege = (menuId, field, value) => {
+    if (isSelfSearched) return;
     setPrivileges((prev) => prev.map((p) => (p.menuId === menuId ? { ...p, [field]: value } : p)));
     setHasChanges(true);
   };
 
   const handleSave = async () => {
-    if (!userInfo) return;
+    if (!userInfo || isSelfSearched) return;
     setSaving(true);
     try {
       const payload = privileges.map((p) => ({
@@ -56,7 +64,7 @@ function UserLevelPrivilegePage() {
         canDelete: p.canDelete,
       }));
       const res = await userLevelPrivilegeService.saveUserPrivileges(payload);
-      showSuccess(res?.message || 'User privileges saved successfully.', 'Saved');
+      showSuccess(res?.message || 'User privileges saved successfully.', res?.header || 'Saved');
       setHasChanges(false);
     } catch (err) { showErrorPopup(err); }
     finally { setSaving(false); }
@@ -140,11 +148,31 @@ function UserLevelPrivilegePage() {
               <button className="ra-btn ra-btn-secondary" onClick={handleReset} disabled={loading || saving}>
                 ↺ Reset to Role Defaults
               </button>
-              <button className="ra-btn ra-btn-primary" onClick={handleSave} disabled={saving || !hasChanges}>
+              <button
+                className="ra-btn ra-btn-primary"
+                onClick={handleSave}
+                disabled={saving || !hasChanges || isSelfSearched}
+                title={isSelfSearched ? 'You cannot modify your own privileges' : undefined}
+              >
                 {saving ? 'Saving…' : '💾 Save Privileges'}
               </button>
             </div>
           </div>
+          {isSelfSearched && (
+            <p
+              style={{
+                margin: '0 0 12px',
+                padding: '8px 10px',
+                fontSize: 13,
+                color: '#fbbf24',
+                background: 'rgba(251, 191, 36, 0.08)',
+                border: '1px solid rgba(251, 191, 36, 0.35)',
+                borderRadius: 6,
+              }}
+            >
+              🔒 Self-edit protection: you cannot modify your own privileges.
+            </p>
+          )}
           {loading ? (
             <div className="ra-loading"><div className="ra-spinner" /><span>Loading privileges…</span></div>
           ) : privileges.length === 0 ? (
@@ -161,13 +189,13 @@ function UserLevelPrivilegePage() {
                   {privileges.map((priv) => (
                     <tr key={priv.menuId}>
                       <td className="ra-menu-name">{priv.menuName}</td>
-                      <td><input type="checkbox" className="ra-priv-checkbox" checked={priv.canView}
+                      <td><input type="checkbox" className="ra-priv-checkbox" checked={priv.canView} disabled={isSelfSearched}
                         onChange={(e) => updatePrivilege(priv.menuId, 'canView', e.target.checked)} /></td>
-                      <td><input type="checkbox" className="ra-priv-checkbox" checked={priv.canAdd}
+                      <td><input type="checkbox" className="ra-priv-checkbox" checked={priv.canAdd} disabled={isSelfSearched}
                         onChange={(e) => updatePrivilege(priv.menuId, 'canAdd', e.target.checked)} /></td>
-                      <td><input type="checkbox" className="ra-priv-checkbox" checked={priv.canEdit}
+                      <td><input type="checkbox" className="ra-priv-checkbox" checked={priv.canEdit} disabled={isSelfSearched}
                         onChange={(e) => updatePrivilege(priv.menuId, 'canEdit', e.target.checked)} /></td>
-                      <td><input type="checkbox" className="ra-priv-checkbox" checked={priv.canDelete}
+                      <td><input type="checkbox" className="ra-priv-checkbox" checked={priv.canDelete} disabled={isSelfSearched}
                         onChange={(e) => updatePrivilege(priv.menuId, 'canDelete', e.target.checked)} /></td>
                       <td>
                         <span className={`ra-status ${priv.isEditable ? 'ra-status-yes' : 'ra-status-no'}`}>

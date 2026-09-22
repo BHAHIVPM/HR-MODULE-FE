@@ -84,7 +84,7 @@ function LeaveManagementPage() {
         noOfDays: parseFloat(applyForm.noOfDays),
       };
       const res = await leaveApplicationService.apply(payload);
-      showSuccess(res?.data?.message || 'Leave application submitted successfully.');
+      showSuccess(res?.data?.message || 'Leave application submitted successfully.', res?.data?.header || 'Success');
       setShowApplyModal(false);
       fetchApplications();
     } catch (err) {
@@ -104,10 +104,10 @@ function LeaveManagementPage() {
 
       if (selectedType) {
         const res = await leaveMasterService.update(selectedType.leaveTypeId, payload);
-        showSuccess(res?.data?.message || 'Leave type updated.');
+        showSuccess(res?.data?.message || 'Leave type updated.', res?.data?.header || 'Success');
       } else {
         const res = await leaveMasterService.save(payload);
-        showSuccess(res?.data?.message || 'New leave type created.');
+        showSuccess(res?.data?.message || 'New leave type created.', res?.data?.header || 'Success');
       }
       setShowTypeModal(false);
       fetchLeaveTypes();
@@ -157,10 +157,10 @@ function LeaveManagementPage() {
     try {
       if (type === 'APPROVE') {
         const res = await leaveApplicationService.approve(applicationId, approverNum, remarks);
-        showSuccess(res?.data?.message || 'Leave application approved!');
+        showSuccess(res?.data?.message || 'Leave application approved!', res?.data?.header || 'Success');
       } else {
         const res = await leaveApplicationService.reject(applicationId, approverNum, remarks);
-        showSuccess(res?.data?.message || 'Leave application rejected.');
+        showSuccess(res?.data?.message || 'Leave application rejected.', res?.data?.header || 'Success');
       }
       setActionModal((prev) => ({ ...prev, show: false }));
       fetchApplications();
@@ -174,7 +174,7 @@ function LeaveManagementPage() {
     if (!window.confirm(`Cancel leave application #${id}?`)) return;
     try {
       const res = await leaveApplicationService.cancel(id);
-      showSuccess(res?.data?.message || 'Leave application cancelled.');
+      showSuccess(res?.data?.message || 'Leave application cancelled.', res?.data?.header || 'Success');
       fetchApplications();
     } catch (err) {
       showErrorPopup(err);
@@ -186,7 +186,7 @@ function LeaveManagementPage() {
     if (!window.confirm(`Delete leave type ${name}?`)) return;
     try {
       const res = await leaveMasterService.delete(id);
-      showSuccess(res?.data?.message || 'Leave type deleted.');
+      showSuccess(res?.data?.message || 'Leave type deleted.', res?.data?.header || 'Success');
       fetchLeaveTypes();
     } catch (err) {
       showErrorPopup(err);

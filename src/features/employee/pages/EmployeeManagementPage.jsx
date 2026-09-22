@@ -4,10 +4,14 @@ import employeeService from '../services/employeeService';
 import EmployeeForm from '../components/EmployeeForm';
 import { REGISTRATION_ROUTES } from '../../registration/config/moduleRegistrationConfig';
 import { useNotification } from '../../../context/NotificationContext';
+import useCurrentUser from '../../../hooks/useCurrentUser';
 import './EmployeeManagementPage.css';
 
 function EmployeeManagementPage() {
   const { showSuccess, showErrorPopup } = useNotification();
+  // Self-edit protection: the logged-in user cannot change the status of the
+  // employee record linked to their own login account.
+  const { isSelfId } = useCurrentUser();
   const navigate = useNavigate();
 
   const [employees, setEmployees] = useState([]);
@@ -48,6 +52,15 @@ function EmployeeManagementPage() {
 
   // Quick Status Update using PUT /employee/update/{employeeId}
   const handleStatusChange = async (emp, newStatus) => {
+    // Self-edit protection: the logged-in user cannot change the status of
+    // their own employee record (e.g. resign/terminate themselves).
+    if (isSelfId(emp.loginId)) {
+      showErrorPopup({
+        title: 'Not Allowed',
+        message: 'You cannot change the status of your own employee record.',
+      });
+      return;
+    }
     try {
       const updatedEmp = { ...emp, status: newStatus };
       const response = await employeeService.update(emp.employeeId, updatedEmp);
@@ -58,7 +71,7 @@ function EmployeeManagementPage() {
 
       showSuccess(
         response?.data?.message || `Employee status updated to ${newStatus}`,
-        'Status Updated'
+        response?.data?.header || 'Status Updated'
       );
     } catch (err) {
       showErrorPopup(err);
@@ -76,7 +89,7 @@ function EmployeeManagementPage() {
       const response = await employeeService.delete(employeeId);
       showSuccess(
         response?.data?.message || 'Employee deleted successfully.',
-        'Deleted'
+        response?.data?.header || 'Deleted'
       );
       loadEmployees(viewMode);
     } catch (err) {
@@ -284,7 +297,9 @@ function EmployeeManagementPage() {
                             className="status-select-inline"
                             value={emp.status}
                             onChange={(e) => handleStatusChange(emp, e.target.value)}
-                            title="Quick Status Update"
+                            title={isSelfId(emp.loginId) ? 'You cannot change your own status' : 'Quick Status Update'}
+                            disabled={isSelfId(emp.loginId)}
+                            style={isSelfId(emp.loginId) ? { opacity: 0.6, cursor: 'not-allowed' } : undefined}
                           >
                             <option value="ACTIVE">ACTIVE</option>
                             <option value="INACTIVE">INACTIVE</option>

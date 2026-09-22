@@ -80,10 +80,10 @@ function OrganizationPage() {
 
       if (selectedDept) {
         const res = await departmentService.update(selectedDept.departmentId, payload);
-        showSuccess(res?.data?.message || 'Department updated successfully.');
+        showSuccess(res?.data?.message || 'Department updated successfully.', res?.data?.header || 'Success');
       } else {
         const res = await departmentService.save(payload);
-        showSuccess(res?.data?.message || 'Department created successfully.');
+        showSuccess(res?.data?.message || 'Department created successfully.', res?.data?.header || 'Success');
       }
       setShowDeptModal(false);
       fetchDepartments();
@@ -103,10 +103,10 @@ function OrganizationPage() {
 
       if (selectedDesig) {
         const res = await designationService.update(selectedDesig.designationId, payload);
-        showSuccess(res?.data?.message || 'Designation updated successfully.');
+        showSuccess(res?.data?.message || 'Designation updated successfully.', res?.data?.header || 'Success');
       } else {
         const res = await designationService.save(payload);
-        showSuccess(res?.data?.message || 'Designation created successfully.');
+        showSuccess(res?.data?.message || 'Designation created successfully.', res?.data?.header || 'Success');
       }
       setShowDesigModal(false);
       fetchDesignations();
@@ -131,7 +131,7 @@ function OrganizationPage() {
     if (!window.confirm(`Delete department ${name}?`)) return;
     try {
       const res = await departmentService.delete(id);
-      showSuccess(res?.data?.message || 'Department deleted.');
+      showSuccess(res?.data?.message || 'Department deleted.', res?.data?.header || 'Success');
       fetchDepartments();
     } catch (err) {
       showErrorPopup(err);
@@ -154,7 +154,7 @@ function OrganizationPage() {
     if (!window.confirm(`Delete designation ${name}?`)) return;
     try {
       const res = await designationService.delete(id);
-      showSuccess(res?.data?.message || 'Designation deleted.');
+      showSuccess(res?.data?.message || 'Designation deleted.', res?.data?.header || 'Success');
       fetchDesignations();
     } catch (err) {
       showErrorPopup(err);

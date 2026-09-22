@@ -1,6 +1,14 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+  useRef,
+} from 'react';
 import ToastContainer from '../components/common/Toast/ToastContainer';
 import ErrorModal from '../components/common/ErrorModal/ErrorModal';
+import { API_ERROR_EVENT, API_SUCCESS_EVENT } from '../api/axiosClient';
 
 const NotificationContext = createContext();
 
@@ -11,8 +19,24 @@ export function NotificationProvider({ children }) {
     error: null,
   });
 
+  // Tracks the signature of the most recent success toast so a page-level
+  // showSuccess() call with the same header+message as the generic
+  // axios-event toast does not stack a duplicate toast on screen.
+  const lastToastKeyRef = useRef(null);
+
   const removeToast = useCallback((id) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
+
+  /** Returns true when an identical toast was shown within the last 2s. */
+  const checkDuplicateToast = useCallback((message, type, title) => {
+    const key = `${type}::${title || ''}::${message || ''}`;
+    if (lastToastKeyRef.current === key) return true;
+    lastToastKeyRef.current = key;
+    setTimeout(() => {
+      if (lastToastKeyRef.current === key) lastToastKeyRef.current = null;
+    }, 2000);
+    return false;
   }, []);
 
   /**
@@ -27,10 +51,14 @@ export function NotificationProvider({ children }) {
 
   /**
    * Helper specifically for success messages (1.5 seconds slide-in on top right).
+   * De-duplicated against the generic axios success toast so identical
+   * messages never stack.
    */
   const showSuccess = useCallback((message, title = 'Success') => {
+    if (checkDuplicateToast(message, 'success', title)) return null;
     return showToast(message, 'success', title, 1500);
-  }, [showToast]);
+  }, [showToast, checkDuplicateToast]);
+
 
   /**
    * Open the global Error Pop-up Modal.
@@ -90,6 +118,32 @@ export function NotificationProvider({ children }) {
   const closeErrorModal = useCallback(() => {
     setErrorModal((prev) => ({ ...prev, isOpen: false }));
   }, []);
+
+  // ── Generic API notification wiring ────────────────────────────────────────
+  // axiosClient dispatches these window events for EVERY API call (present and
+  // future), so errors always open the manual-close modal and successful
+  // mutations always show the auto-dismissing toast - no page code required.
+  useEffect(() => {
+    const handleApiError = (event) => {
+      const detail = event.detail || {};
+      showErrorPopup({
+        title: detail.title,
+        message: detail.message,
+        statusCode: detail.statusCode,
+        details: detail.details,
+      });
+    };
+    const handleApiSuccess = (event) => {
+      const detail = event.detail || {};
+      showSuccess(detail.message, detail.header || 'Success');
+    };
+    window.addEventListener(API_ERROR_EVENT, handleApiError);
+    window.addEventListener(API_SUCCESS_EVENT, handleApiSuccess);
+    return () => {
+      window.removeEventListener(API_ERROR_EVENT, handleApiError);
+      window.removeEventListener(API_SUCCESS_EVENT, handleApiSuccess);
+    };
+  }, [showErrorPopup, showSuccess]);
 
   return (
     <NotificationContext.Provider
