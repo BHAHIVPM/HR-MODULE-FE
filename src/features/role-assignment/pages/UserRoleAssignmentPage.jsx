@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNotification } from '../../../context/NotificationContext';
 import roleAssignmentService from '../services/roleAssignmentService';
+import useCurrentUser from '../../../hooks/useCurrentUser';
 import './RoleCreationPage.css';
 
 const USER_TYPES = [
@@ -21,6 +22,9 @@ function UserRoleAssignmentPage() {
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const { showSuccess, showErrorPopup } = useNotification();
+  // Self-edit protection: the logged-in user cannot assign or revoke roles
+  // on their own login account.
+  const { isSelfId } = useCurrentUser();
 
   const loadUsers = useCallback(async () => {
     setLoading(true);
@@ -40,6 +44,9 @@ function UserRoleAssignmentPage() {
     else setFilteredUsers(users.filter((u) => u.userType === userTypeFilter));
   }, [userTypeFilter, users]);
 
+  // True when the currently selected user is the logged-in user himself.
+  const isSelfSelected = selectedUser ? isSelfId(selectedUser.loginId) : false;
+
   const loadUserRoles = useCallback(async (loginId) => {
     setRolesLoading(true);
     try {
@@ -57,12 +64,19 @@ function UserRoleAssignmentPage() {
   };
 
   const toggleRoleAssignment = (roleId) => {
+    if (isSelfSelected) {
+      showErrorPopup({
+        title: 'Not Allowed',
+        message: 'You cannot modify your own role assignments.',
+      });
+      return;
+    }
     setUserRoles((prev) => prev.map((r) => (r.roleId === roleId ? { ...r, isSelected: !r.isSelected } : r)));
     setHasChanges(true);
   };
 
   const handleSave = async () => {
-    if (!selectedUser) return;
+    if (!selectedUser || isSelfSelected) return;
     setSaving(true);
     try {
       const assignedRoles = userRoles.filter((r) => r.isSelected);
@@ -73,7 +87,7 @@ function UserRoleAssignmentPage() {
         userLevelPrivilege: [],
       };
       const res = await roleAssignmentService.saveRoleAssignments(payload);
-      showSuccess(res?.message || 'Role assignments saved successfully.', 'Saved');
+      showSuccess(res?.message || 'Role assignments saved successfully.', res?.header || 'Saved');
       setHasChanges(false);
       loadUserRoles(selectedUser.loginId);
     } catch (err) { showErrorPopup(err); }
@@ -130,13 +144,33 @@ function UserRoleAssignmentPage() {
             <div className="ra-user-detail-item"><span className="ra-user-detail-label">Email</span><span className="ra-user-detail-value">{selectedUser.emailId || '—'}</span></div>
             <div className="ra-user-detail-item"><span className="ra-user-detail-label">User Type</span><span className="ra-user-detail-value">{selectedUser.userType}</span></div>
           </div>
+          {isSelfSelected && (
+            <p
+              style={{
+                margin: '12px 0 0',
+                padding: '8px 10px',
+                fontSize: 13,
+                color: '#fbbf24',
+                background: 'rgba(251, 191, 36, 0.08)',
+                border: '1px solid rgba(251, 191, 36, 0.35)',
+                borderRadius: 6,
+              }}
+            >
+              🔒 Self-edit protection: you cannot modify your own role assignments.
+            </p>
+          )}
         </div>
       )}
       {selectedUser && (
         <div className="ra-card">
           <div className="ra-card-header">
             <span className="ra-card-title">Available Roles</span>
-            <button className="ra-btn ra-btn-primary" onClick={handleSave} disabled={saving || !hasChanges}>
+            <button
+              className="ra-btn ra-btn-primary"
+              onClick={handleSave}
+              disabled={saving || !hasChanges || isSelfSelected}
+              title={isSelfSelected ? 'You cannot modify your own role assignments' : undefined}
+            >
               {saving ? 'Saving…' : '💾 Save Assignments'}
             </button>
           </div>
@@ -155,7 +189,7 @@ function UserRoleAssignmentPage() {
                       <td><strong>{role.roleName}</strong></td>
                       <td>{role.roleCategory ? (<span className={`ra-tag ra-tag-${role.roleCategory.toLowerCase()}`}>{role.roleCategory}</span>) : (<span className="ra-tag ra-tag-super">Superadmin</span>)}</td>
                       <td><span className={`ra-status ${role.isSystem ? 'ra-status-yes' : 'ra-status-no'}`}>{role.isSystem ? 'Yes' : 'No'}</span></td>
-                      <td><input type="checkbox" className="ra-priv-checkbox" checked={role.isSelected} onChange={() => toggleRoleAssignment(role.roleId)} /></td>
+                      <td><input type="checkbox" className="ra-priv-checkbox" checked={role.isSelected} disabled={isSelfSelected} onChange={() => toggleRoleAssignment(role.roleId)} /></td>
                       <td className="ra-date">{role.assignedAt ? new Date(role.assignedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'}</td>
                     </tr>
                   ))}

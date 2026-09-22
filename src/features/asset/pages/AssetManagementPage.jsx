@@ -62,10 +62,10 @@ function AssetManagementPage() {
     try {
       if (selectedAsset) {
         const res = await assetService.update(selectedAsset.assetId, assetForm);
-        showSuccess(res?.data?.message || 'Asset details updated.');
+        showSuccess(res?.data?.message || 'Asset details updated.', res?.data?.header || 'Success');
       } else {
         const res = await assetService.save(assetForm);
-        showSuccess(res?.data?.message || 'New asset registered.');
+        showSuccess(res?.data?.message || 'New asset registered.', res?.data?.header || 'Success');
       }
       setShowAssetModal(false);
       loadAssets();
@@ -79,7 +79,7 @@ function AssetManagementPage() {
     if (!issueAssetId || !issueEmployeeId) return;
     try {
       const res = await assetService.issueTo(issueAssetId, parseInt(issueEmployeeId, 10));
-      showSuccess(res?.data?.message || `Asset #${issueAssetId} issued to Employee #${issueEmployeeId}`);
+      showSuccess(res?.data?.message || `Asset #${issueAssetId} issued to Employee #${issueEmployeeId}`, res?.data?.header || 'Success');
       setShowIssueModal(false);
       loadAssets();
     } catch (err) {
@@ -92,7 +92,7 @@ function AssetManagementPage() {
     if (!returnAssetId) return;
     try {
       const res = await assetService.returnAsset(returnAssetId, returnCondition, returnRemarks);
-      showSuccess(res?.data?.message || `Asset #${returnAssetId} checked back into inventory.`);
+      showSuccess(res?.data?.message || `Asset #${returnAssetId} checked back into inventory.`, res?.data?.header || 'Success');
       setShowReturnModal(false);
       loadAssets();
     } catch (err) {
@@ -104,7 +104,7 @@ function AssetManagementPage() {
     if (!window.confirm(`Delete asset ${name}?`)) return;
     try {
       const res = await assetService.delete(id);
-      showSuccess(res?.data?.message || 'Asset record deleted.');
+      showSuccess(res?.data?.message || 'Asset record deleted.', res?.data?.header || 'Success');
       loadAssets();
     } catch (err) {
       showErrorPopup(err);

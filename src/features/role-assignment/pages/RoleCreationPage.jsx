@@ -64,10 +64,10 @@ function RoleCreationPage() {
           roleCategory: formData.roleCategory, system: formData.system,
         };
         const res = await roleService.updateRole(editingRole.roleId, updateData);
-        showSuccess(res?.message || 'Role updated successfully.', 'Updated');
+        showSuccess(res?.message || 'Role updated successfully.', res?.header || 'Updated');
       } else {
         const res = await roleService.createRole(formData);
-        showSuccess(res?.message || 'Role created successfully.', 'Created');
+        showSuccess(res?.message || 'Role created successfully.', res?.header || 'Created');
       }
       setModalOpen(false);
       loadRoles();
@@ -87,7 +87,7 @@ function RoleCreationPage() {
     if (!deletingRole) return;
     try {
       const res = await roleService.deleteRole(deletingRole.roleId);
-      showSuccess(res?.message || 'Role deleted successfully.', 'Deleted');
+      showSuccess(res?.message || 'Role deleted successfully.', res?.header || 'Deleted');
       setDeleteConfirmOpen(false);
       setDeletingRole(null);
       loadRoles();

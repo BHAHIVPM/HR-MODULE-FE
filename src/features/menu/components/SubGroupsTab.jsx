@@ -16,7 +16,7 @@ function SubGroupsTab({ subGroups, fetchSubGroups, showSuccess, showErrorPopup }
         return;
       }
       const res = await subGroupService.add(form);
-      showSuccess(res?.data?.message || 'Sub Group added successfully.');
+      showSuccess(res?.data?.message || 'Sub Group added successfully.', res?.data?.header || 'Success');
       setShowModal(false);
       setForm({ subGroupName: '' });
       fetchSubGroups();

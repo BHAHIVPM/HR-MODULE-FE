@@ -27,10 +27,10 @@ function MenuItemsTab({ menuItems, mainGroups, subGroups, fetchMenuItems, showSu
       const payload = { ...form, mainGroupId: parseInt(form.mainGroupId, 10), subGroupId: form.subGroupId ? parseInt(form.subGroupId, 10) : null };
       if (editingItem) {
         const res = await menuService.update(editingItem.menuNameId, payload);
-        showSuccess(res?.data?.message || 'Menu Item updated successfully.');
+        showSuccess(res?.data?.message || 'Menu Item updated successfully.', res?.data?.header || 'Success');
       } else {
         const res = await menuService.add(payload);
-        showSuccess(res?.data?.message || 'Menu Item added successfully.');
+        showSuccess(res?.data?.message || 'Menu Item added successfully.', res?.data?.header || 'Success');
       }
       setShowModal(false);
       setEditingItem(null);
@@ -47,7 +47,7 @@ function MenuItemsTab({ menuItems, mainGroups, subGroups, fetchMenuItems, showSu
 
   const handleDelete = async (id, name) => {
     if (!window.confirm(`Delete Menu Item "${name}"?`)) return;
-    try { const res = await menuService.delete(id); showSuccess(res?.data?.message || 'Menu Item deleted.'); fetchMenuItems(); }
+    try { const res = await menuService.delete(id); showSuccess(res?.data?.message || 'Menu Item deleted.', res?.data?.header || 'Success'); fetchMenuItems(); }
     catch (err) { showErrorPopup(err); }
   };
 
@@ -67,7 +67,7 @@ function MenuItemsTab({ menuItems, mainGroups, subGroups, fetchMenuItems, showSu
     sameGroup.splice(dropIndex, 0, moved);
     const reordered = sameGroup.map((item, idx) => ({ menuNameId: item.menuNameId, hierarchyId: idx + 1 }));
     setDraggedRow(null);
-    try { const res = await menuService.reorder(draggedItem.mainGroupId, reordered); showSuccess(res?.data?.message || 'Menu Items reordered.'); fetchMenuItems(); }
+    try { const res = await menuService.reorder(draggedItem.mainGroupId, reordered); showSuccess(res?.data?.message || 'Menu Items reordered.', res?.data?.header || 'Success'); fetchMenuItems(); }
     catch (err) { showErrorPopup(err); fetchMenuItems(); }
   };
 
