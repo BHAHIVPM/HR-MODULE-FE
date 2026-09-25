@@ -85,6 +85,13 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  min-width: 0;
+}
+
+.sidebar-menu-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sidebar-add-btn {
@@ -293,15 +300,23 @@
   }
 }
 
-@media (max-width: 768px) {
+/*
+ * Tablet & mobile (<= 1024px): the sidebar collapses to a compact icon rail.
+ * The old breakpoint targeted selectors that no longer exist in the markup
+ * (.sidebar-link span), so labels never collapsed and the menu overflowed.
+ * The rail hides labels and shows submenus as hover/focus flyouts.
+ */
+@media (max-width: 1024px) {
   .main-layout-sidebar {
     flex: 0 0 64px;
     overflow: visible;
-    z-index: 10;
+    z-index: 300;
   }
 
+  /* Hide every text label; icons stay as the navigation affordance */
   .sidebar-title,
-  .sidebar-link span {
+  .sidebar-menu-label,
+  .sidebar-subgroup-label {
     display: none;
   }
 
@@ -310,13 +325,13 @@
     padding: 16px 8px;
   }
 
-  .sidebar-link {
+  .sidebar-menu-row {
     justify-content: center;
     padding: 10px;
   }
 
-  .sidebar-chevron {
-    display: none;
+  .sidebar-menu-left {
+    justify-content: center;
   }
 
   .sidebar-group {
@@ -327,30 +342,73 @@
     position: absolute;
     left: 100%;
     top: 0;
-    min-width: 160px;
-    background: var(--ink-800);
+    min-width: 200px;
+    background: var(--ink-800, #1e293b);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 8px;
     padding: 6px;
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-lg, 0 10px 30px rgba(0, 0, 0, 0.35));
     margin: 0;
     display: none;
+    z-index: 400;
   }
 
+  /* Open the flyout on hover or keyboard focus */
   .sidebar-group:hover .sidebar-submenu,
   .sidebar-group:focus-within .sidebar-submenu {
     display: flex;
   }
 
   .sidebar-sublink {
-    padding: 8px 12px;
+    padding: 9px 12px;
+    white-space: nowrap;
   }
 
   .sidebar-sublink::before {
     display: none;
   }
 
+  .sidebar-sublink-row {
+    gap: 4px;
+  }
+
+  .sidebar-add-btn-sm {
+    margin-right: 2px;
+  }
+
+  .sidebar-add-btn {
+    width: 26px;
+    height: 26px;
+  }
+
   .main-layout-content {
     padding: 20px 16px;
+  }
+}
+
+/* Small phones (<= 640px): tighten spacing further */
+@media (max-width: 640px) {
+  .main-layout-sidebar {
+    flex: 0 0 56px;
+  }
+
+  .sidebar-brand {
+    padding: 12px 6px;
+  }
+
+  .sidebar-mark {
+    width: 30px;
+    height: 30px;
+  }
+
+  .sidebar-submenu {
+    left: calc(100% + 4px);
+    min-width: 180px;
+    max-width: 78vw;
+  }
+
+  .main-layout-content {
+    padding: 16px 12px;
   }
 }
 
