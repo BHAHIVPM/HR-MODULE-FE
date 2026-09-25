@@ -5,6 +5,11 @@ import { useNotification } from '../../../context/NotificationContext';
 import useCurrentUser from '../../../hooks/useCurrentUser';
 import './UserManagementPage.css';
 
+// Standard user types offered by the edit form (matches the registration form).
+// Values outside this list (e.g. DB-seeded roles like DEVELOPER) are still shown
+// by prepending them to the options when the edited record has such a value.
+const USER_TYPE_OPTIONS = ['ADMIN', 'EMPLOYEE', 'USER'];
+
 function UserManagementPage() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -262,9 +267,16 @@ function UserManagementPage() {
                   disabled={editingIsSelf}
                   style={editingIsSelf ? { opacity: 0.6, cursor: 'not-allowed' } : undefined}
                 >
-                  <option value="ADMIN">ADMIN</option>
-                  <option value="EMPLOYEE">EMPLOYEE</option>
-                  <option value="USER">USER</option>
+                  {/* A record may hold a userType seeded directly in the DB (e.g. DEVELOPER)
+                      that is not part of the standard form options. A <select> whose value
+                      matches no <option> silently displays its first option instead, which
+                      would show a false role - so always include the current value first. */}
+                  {(USER_TYPE_OPTIONS.includes(editFormData.userType)
+                    ? USER_TYPE_OPTIONS
+                    : [editFormData.userType, ...USER_TYPE_OPTIONS]
+                  ).map((type) => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
                 </select>
                 {editingIsSelf && (
                   <span style={{ display: 'block', marginTop: 4, fontSize: 12, color: '#94a3b8' }}>
