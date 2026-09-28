@@ -54,7 +54,7 @@ function RolePrivilegePage() {
         canView: p.canView, canAdd: p.canAdd, canEdit: p.canEdit, canDelete: p.canDelete,
       }));
       const res = await rolePrivilegeService.savePrivilegeBatch(payload);
-      showSuccess(res?.message || 'Privileges saved successfully.', 'Saved');
+      showSuccess(res?.message || 'Privileges saved successfully.', res?.header || 'Saved');
       setHasChanges(false);
     } catch (err) { showErrorPopup(err); }
     finally { setSaving(false); }

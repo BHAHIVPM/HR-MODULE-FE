@@ -2,7 +2,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import userService from '../services/userService';
 import { useNotification } from '../../../context/NotificationContext';
+import useCurrentUser from '../../../hooks/useCurrentUser';
 import './UserManagementPage.css';
+
+// Standard user types offered by the edit form (matches the registration form).
+// Values outside this list (e.g. DB-seeded roles like DEVELOPER) are still shown
+// by prepending them to the options when the edited record has such a value.
+const USER_TYPE_OPTIONS = ['ADMIN', 'EMPLOYEE', 'USER'];
 
 function UserManagementPage() {
   const [users, setUsers] = useState([]);
@@ -11,6 +17,12 @@ function UserManagementPage() {
   const [editFormData, setEditFormData] = useState({});
   const navigate = useNavigate();
   const { showSuccess, showErrorPopup } = useNotification();
+  // Self-edit protection: resolves the logged-in user's identity so that
+  // identity/access fields of the CURRENT user cannot be changed by himself.
+  const { isSelfId } = useCurrentUser();
+
+  // True when the record being edited in the modal belongs to the logged-in user.
+  const editingIsSelf = editingUser ? isSelfId(editingUser.userId) : false;
 
   const loadUsers = useCallback(async () => {
     setLoading(true);
@@ -31,12 +43,21 @@ function UserManagementPage() {
 
 
   const handleDelete = async (userId, name) => {
+    // Self-protection: a user may never delete their own login account.
+    if (isSelfId(userId)) {
+      showErrorPopup({
+        title: 'Not Allowed',
+        message: 'You cannot delete your own login account.',
+      });
+      return;
+    }
+
     const confirm = window.confirm(`Are you sure you want to delete user ${name || userId}?`);
     if (!confirm) return;
 
     try {
       const res = await userService.delete(userId);
-      showSuccess(res?.data?.message || 'User deleted successfully.', 'Deleted');
+      showSuccess(res?.data?.message || 'User deleted successfully.', res?.data?.header || 'Deleted');
       loadUsers();
     } catch (err) {
       showErrorPopup(err);
@@ -57,9 +78,16 @@ function UserManagementPage() {
 
   const handleUpdateSubmit = async (e) => {
     e.preventDefault();
+    // Self-edit protection: for the logged-in user's own account the userType
+    // and status are always sent back unchanged, even if the form state was
+    // manipulated. Nobody (admin/superadmin/employee) can change their own
+    // user type or status - only another (higher) user can.
+    const payload = editingIsSelf
+      ? { ...editFormData, userType: editingUser.userType, status: editingUser.status }
+      : editFormData;
     try {
-      const res = await userService.update(editingUser.userId, editFormData);
-      showSuccess(res?.data?.message || 'User updated successfully.', 'Updated');
+      const res = await userService.update(editingUser.userId, payload);
+      showSuccess(res?.data?.message || 'User updated successfully.', res?.data?.header || 'Updated');
       setEditingUser(null);
       loadUsers();
     } catch (err) {
@@ -118,6 +146,19 @@ function UserManagementPage() {
                   <tr key={user.tableId || user.userId}>
                     <td>
                       <span className="user-id-badge">{user.userId}</span>
+                      {isSelfId(user.userId) && (
+                        <span
+                          style={{
+                            marginLeft: 6,
+                            fontSize: 11,
+                            fontWeight: 700,
+                            color: '#38bdf8',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          (You)
+                        </span>
+                      )}
                     </td>
                     <td>
                       <strong style={{ color: '#f8fafc' }}>{user.name}</strong>
@@ -171,6 +212,21 @@ function UserManagementPage() {
             <h3 style={{ margin: '0 0 16px 0', color: '#f8fafc' }}>
               Edit User (ID: {editingUser.userId})
             </h3>
+            {editingIsSelf && (
+              <p
+                style={{
+                  margin: '-4px 0 14px 0',
+                  padding: '8px 10px',
+                  fontSize: 13,
+                  color: '#fbbf24',
+                  background: 'rgba(251, 191, 36, 0.08)',
+                  border: '1px solid rgba(251, 191, 36, 0.35)',
+                  borderRadius: 6,
+                }}
+              >
+                🔒 Self-edit protection: you cannot change your own User Role or Status.
+              </p>
+            )}
             <form onSubmit={handleUpdateSubmit}>
               <div className="modal-form-group">
                 <label>Full Name</label>
@@ -208,11 +264,25 @@ function UserManagementPage() {
                 <select
                   value={editFormData.userType}
                   onChange={(e) => setEditFormData({ ...editFormData, userType: e.target.value })}
+                  disabled={editingIsSelf}
+                  style={editingIsSelf ? { opacity: 0.6, cursor: 'not-allowed' } : undefined}
                 >
-                  <option value="ADMIN">ADMIN</option>
-                  <option value="EMPLOYEE">EMPLOYEE</option>
-                  <option value="USER">USER</option>
+                  {/* A record may hold a userType seeded directly in the DB (e.g. DEVELOPER)
+                      that is not part of the standard form options. A <select> whose value
+                      matches no <option> silently displays its first option instead, which
+                      would show a false role - so always include the current value first. */}
+                  {(USER_TYPE_OPTIONS.includes(editFormData.userType)
+                    ? USER_TYPE_OPTIONS
+                    : [editFormData.userType, ...USER_TYPE_OPTIONS]
+                  ).map((type) => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
                 </select>
+                {editingIsSelf && (
+                  <span style={{ display: 'block', marginTop: 4, fontSize: 12, color: '#94a3b8' }}>
+                    Your own user role cannot be changed from this account.
+                  </span>
+                )}
               </div>
 
               <div className="modal-form-group">
@@ -220,10 +290,17 @@ function UserManagementPage() {
                 <select
                   value={editFormData.status}
                   onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value })}
+                  disabled={editingIsSelf}
+                  style={editingIsSelf ? { opacity: 0.6, cursor: 'not-allowed' } : undefined}
                 >
                   <option value="ACTIVE">ACTIVE</option>
                   <option value="INACTIVE">INACTIVE</option>
                 </select>
+                {editingIsSelf && (
+                  <span style={{ display: 'block', marginTop: 4, fontSize: 12, color: '#94a3b8' }}>
+                    Your own account status cannot be changed from this account.
+                  </span>
+                )}
               </div>
 
               <div className="modal-actions">

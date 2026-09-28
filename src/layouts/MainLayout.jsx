@@ -4,6 +4,11 @@ import { useSessionTimeout } from '../hooks/useSessionTimeout';
 import SessionWarningModal from '../components/SessionWarningModal/SessionWarningModal';
 import AppHeader from '../components/AppHeader/AppHeader';
 import mainGroupService from '../features/menu/services/mainGroupService';
+import useCurrentUser from '../hooks/useCurrentUser';
+import {
+  MODULE_REGISTRATIONS,
+  resolveAddPath,
+} from '../features/registration/config/moduleRegistrationConfig';
 import './MainLayout.css';
 
 const NAV_ITEMS = [
@@ -15,6 +20,7 @@ const NAV_ITEMS = [
   {
     label: 'Menu Management',
     listPath: '/menu-management',
+    formPath: '/registrations/main-group',
     icon: MenuIcon,
   },
   {
@@ -26,46 +32,55 @@ const NAV_ITEMS = [
   {
     label: 'Organization',
     listPath: '/organization',
+    formPath: '/registrations/department',
     icon: OrganizationIcon,
   },
   {
     label: 'Shifts & Rosters',
     listPath: '/shifts',
+    formPath: '/registrations/shift',
     icon: ShiftIcon,
   },
   {
     label: 'Attendance',
     listPath: '/attendance',
+    formPath: '/registrations/attendance',
     icon: AttendanceIcon,
   },
   {
     label: 'Leaves',
     listPath: '/leaves',
+    formPath: '/registrations/leave-application',
     icon: LeaveIcon,
   },
   {
     label: 'Holidays',
     listPath: '/holidays',
+    formPath: '/registrations/holiday',
     icon: HolidayIcon,
   },
   {
     label: 'Payroll & Salary',
     listPath: '/payroll-management',
+    formPath: '/registrations/salary-structure',
     icon: PayrollIcon,
   },
   {
     label: 'Assets',
     listPath: '/assets',
+    formPath: '/registrations/asset',
     icon: AssetIcon,
   },
   {
     label: 'Documents',
     listPath: '/documents',
+    formPath: '/registrations/document',
     icon: DocumentIcon,
   },
   {
     label: 'Appraisals',
     listPath: '/performance-reviews',
+    formPath: '/registrations/performance-review',
     icon: PerformanceIcon,
   },
   {
@@ -77,6 +92,7 @@ const NAV_ITEMS = [
   {
     label: 'Role Assignment',
     listPath: '/role-assignment',
+    formPath: '/registrations/role',
     icon: RoleAssignmentIcon,
   },
   {
@@ -86,6 +102,83 @@ const NAV_ITEMS = [
     icon: ClientIcon,
   },
 ];
+
+// ---------------------------------------------------------------------------
+// Mandatory menus for DEVELOPER accounts
+// ---------------------------------------------------------------------------
+// The first user in the system is a seeded DEVELOPER account. Nobody can assign
+// role privileges to it yet (role assignment itself requires a user who already
+// has privileges), so the modules needed to bootstrap the system - Role
+// Assignment (holds the Role Privileges tab) and Menu Management (defines what
+// every menu contains) - MUST always be reachable for developer accounts,
+// otherwise the bootstrap user is locked out of the very screens needed to
+// grant itself access. Every other user type relies purely on the
+// menu-management / privilege configuration returned by the backend.
+const MANDATORY_DEVELOPER_MENUS = [
+  {
+    mainGroupId: 'dev-mandatory-role-assignment',
+    mainGroupName: 'Role Assignment',
+    // iconPath intentionally omitted -> sidebar renders the default menu icon
+    subGroup: [
+      {
+        subGroupId: 'dev-mandatory-role-assignment-group',
+        subGroupName: null,
+        subItems: [
+          {
+            menuNameId: 'dev-mandatory-role-assignment-item',
+            menuName: 'Role Assignment',
+            componentPath: '/role-assignment',
+            canView: true,
+            canAdd: false,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    mainGroupId: 'dev-mandatory-menu-management',
+    mainGroupName: 'Menu Management',
+    subGroup: [
+      {
+        subGroupId: 'dev-mandatory-menu-management-group',
+        subGroupName: null,
+        subItems: [
+          {
+            menuNameId: 'dev-mandatory-menu-management-item',
+            menuName: 'Menu Management',
+            componentPath: '/menu-management',
+            canView: true,
+            canAdd: false,
+          },
+        ],
+      },
+    ],
+  },
+];
+
+// True when `menu` already contains a VISIBLE item pointing at `componentPath`.
+function menuHasVisibleItem(menu, componentPath) {
+  return (Array.isArray(menu) ? menu : []).some((mainGroup) =>
+    (Array.isArray(mainGroup?.subGroup) ? mainGroup.subGroup : []).some((subGroup) =>
+      (Array.isArray(subGroup?.subItems) ? subGroup.subItems : []).some(
+        (item) => item?.componentPath === componentPath && item?.canView !== false
+      )
+    )
+  );
+}
+
+// Returns the menu with every mandatory developer entry the backend did not
+// already expose (or exposed as hidden) appended, so the entry is never lost.
+// Duplicate-free by design: the synthetic entry is only added when no visible
+// counterpart exists, and renderBackendNav hides items with canView === false.
+function ensureMandatoryDeveloperMenus(menu) {
+  const base = Array.isArray(menu) ? menu : [];
+  const missing = MANDATORY_DEVELOPER_MENUS.filter((mandatory) => {
+    const item = mandatory.subGroup[0].subItems[0];
+    return !menuHasVisibleItem(base, item.componentPath);
+  });
+  return missing.length > 0 ? [...base, ...missing] : base;
+}
 
 // Static navigation fallback: used only when the backend menu could not be loaded,
 // so the app stays navigable during network/server failures.
@@ -168,14 +261,29 @@ function renderBackendNav(menu, location) {
                 .filter((item) => item.canView !== false)
                 .map((item) => {
                   const isActive = !!item.componentPath && location.pathname === item.componentPath;
+                  const addPath = resolveAddPath(item.componentPath);
+                  // Backend menu items expose the user's add privilege via canAdd.
+                  const showAdd = !!addPath && item.canAdd !== false;
+                  const isAddActive = showAdd && location.pathname === addPath;
                   return (
-                    <li key={`it-${item.menuNameId}`}>
+                    <li key={`it-${item.menuNameId}`} className="sidebar-sublink-row">
                       <Link
                         to={item.componentPath || '#'}
                         className={`sidebar-sublink ${isActive ? 'sidebar-sublink-active' : ''}`}
                       >
                         {item.menuName}
                       </Link>
+                      {showAdd && (
+                        <Link
+                          to={addPath}
+                          className={`sidebar-add-btn sidebar-add-btn-sm ${isAddActive ? 'sidebar-add-btn-active' : ''}`}
+                          title={`Register / Add ${item.menuName}`}
+                          aria-label={`Add ${item.menuName}`}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          +
+                        </Link>
+                      )}
                     </li>
                   );
                 })}
@@ -193,6 +301,11 @@ function MainLayout() {
   const navigate = useNavigate();
   const [menu, setMenu] = useState(null);
   const [menuError, setMenuError] = useState(false);
+  // DEVELOPER accounts (the seeded bootstrap user) always keep access to the
+  // Role Assignment and Menu Management modules - see MANDATORY_DEVELOPER_MENUS.
+  const { currentUserType } = useCurrentUser();
+  const isDeveloperUser = String(currentUserType || '').trim().toUpperCase() === 'DEVELOPER';
+  const effectiveMenu = isDeveloperUser ? ensureMandatoryDeveloperMenus(menu) : menu;
 
   const loadMenu = useCallback(async () => {
     try {
@@ -210,11 +323,14 @@ function MainLayout() {
   }, [loadMenu]);
 
   let navContent = null;
-  if (Array.isArray(menu) && menu.length > 0) {
-    navContent = renderBackendNav(menu, location);
-  } else if (menuError) {
+  if (menuError) {
+    // Server failure: static fallback keeps the app navigable (it already
+    // contains the Role Assignment entry, so developers are covered here too).
     navContent = renderStaticNav(location, navigate);
+  } else if (Array.isArray(effectiveMenu) && effectiveMenu.length > 0) {
+    navContent = renderBackendNav(effectiveMenu, location);
   } else if (Array.isArray(menu)) {
+    // Backend answered but the account has no menus assigned.
     navContent = (
       <div className="sidebar-empty">
         <span>No menus assigned to your account.</span>
@@ -271,6 +387,11 @@ function getPageTitle(pathname) {
   if (pathname === '/registrations/user') return 'User Registration';
   if (pathname === '/registrations/employee') return 'Employee Registration';
   if (pathname === '/registrations/client') return 'Client Registration';
+  if (pathname.startsWith('/registrations/')) {
+    const moduleKey = pathname.replace('/registrations/', '');
+    const config = MODULE_REGISTRATIONS[moduleKey];
+    return config ? config.pageTitle : 'Registration';
+  }
   return 'HR Module';
 }
 

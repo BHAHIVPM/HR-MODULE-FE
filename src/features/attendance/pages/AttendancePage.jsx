@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import attendanceService from '../services/attendanceService';
+import { REGISTRATION_ROUTES } from '../../registration/config/moduleRegistrationConfig';
 import { useNotification } from '../../../context/NotificationContext';
 import './AttendancePage.css';
 
 function AttendancePage() {
   const { showSuccess, showErrorPopup } = useNotification();
+  const navigate = useNavigate();
   
   const [attendances, setAttendances] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -59,7 +62,7 @@ function AttendancePage() {
     if (!quickEmpId) return;
     try {
       const res = await attendanceService.checkIn(quickEmpId);
-      showSuccess(res?.data?.message || `Checked IN Employee #${quickEmpId}`);
+      showSuccess(res?.data?.message || `Checked IN Employee #${quickEmpId}`, res?.data?.header || 'Success');
       setQuickEmpId('');
       loadAllAttendance();
     } catch (err) {
@@ -72,7 +75,7 @@ function AttendancePage() {
     if (!quickEmpId) return;
     try {
       const res = await attendanceService.checkOut(quickEmpId);
-      showSuccess(res?.data?.message || `Checked OUT Employee #${quickEmpId}`);
+      showSuccess(res?.data?.message || `Checked OUT Employee #${quickEmpId}`, res?.data?.header || 'Success');
       setQuickEmpId('');
       loadAllAttendance();
     } catch (err) {
@@ -91,10 +94,10 @@ function AttendancePage() {
 
       if (selectedRecord) {
         const res = await attendanceService.update(selectedRecord.attendanceId, payload);
-        showSuccess(res?.data?.message || 'Attendance record updated.');
+        showSuccess(res?.data?.message || 'Attendance record updated.', res?.data?.header || 'Success');
       } else {
         const res = await attendanceService.save(payload);
-        showSuccess(res?.data?.message || 'Attendance record logged.');
+        showSuccess(res?.data?.message || 'Attendance record logged.', res?.data?.header || 'Success');
       }
       setShowModal(false);
       loadAllAttendance();
@@ -121,7 +124,7 @@ function AttendancePage() {
     if (!window.confirm(`Delete attendance record #${id}?`)) return;
     try {
       const res = await attendanceService.delete(id);
-      showSuccess(res?.data?.message || 'Attendance record deleted.');
+      showSuccess(res?.data?.message || 'Attendance record deleted.', res?.data?.header || 'Success');
       loadAllAttendance();
     } catch (err) {
       showErrorPopup(err);
@@ -134,19 +137,7 @@ function AttendancePage() {
         <h1>Attendance Management</h1>
         <button
           className="btn-primary-action"
-          onClick={() => {
-            setSelectedRecord(null);
-            setFormData({
-              employeeId: '',
-              attendanceDate: new Date().toISOString().split('T')[0],
-              checkInTime: '09:00',
-              checkOutTime: '18:00',
-              workedHours: '9.0',
-              status: 'PRESENT',
-              remarks: '',
-            });
-            setShowModal(true);
-          }}
+          onClick={() => navigate(REGISTRATION_ROUTES.attendance)}
         >
           + Log Attendance Record
         </button>

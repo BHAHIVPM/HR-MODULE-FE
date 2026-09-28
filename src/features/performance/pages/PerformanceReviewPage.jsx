@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import performanceReviewService from '../services/performanceReviewService';
+import { REGISTRATION_ROUTES } from '../../registration/config/moduleRegistrationConfig';
 import { useNotification } from '../../../context/NotificationContext';
 import './PerformanceReviewPage.css';
 
 function PerformanceReviewPage() {
   const { showSuccess, showErrorPopup } = useNotification();
+  const navigate = useNavigate();
 
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -53,10 +56,10 @@ function PerformanceReviewPage() {
 
       if (selectedReview) {
         const res = await performanceReviewService.update(selectedReview.reviewId, payload);
-        showSuccess(res?.data?.message || 'Appraisal record updated.');
+        showSuccess(res?.data?.message || 'Appraisal record updated.', res?.data?.header || 'Success');
       } else {
         const res = await performanceReviewService.save(payload);
-        showSuccess(res?.data?.message || 'Appraisal cycle initiated.');
+        showSuccess(res?.data?.message || 'Appraisal cycle initiated.', res?.data?.header || 'Success');
       }
       setShowModal(false);
       loadReviews();
@@ -68,7 +71,7 @@ function PerformanceReviewPage() {
   const handleSubmitReview = async (reviewId) => {
     try {
       const res = await performanceReviewService.submit(reviewId);
-      showSuccess(res?.data?.message || 'Appraisal submitted for manager review.');
+      showSuccess(res?.data?.message || 'Appraisal submitted for manager review.', res?.data?.header || 'Success');
       loadReviews();
     } catch (err) {
       showErrorPopup(err);
@@ -101,7 +104,7 @@ function PerformanceReviewPage() {
 
     try {
       const res = await performanceReviewService.completeReview(completeModal.reviewId, ratingNum, completeModal.comments);
-      showSuccess(res?.data?.message || 'Appraisal review completed!');
+      showSuccess(res?.data?.message || 'Appraisal review completed!', res?.data?.header || 'Success');
       setCompleteModal((prev) => ({ ...prev, show: false }));
       loadReviews();
     } catch (err) {
@@ -112,7 +115,7 @@ function PerformanceReviewPage() {
   const handleAcknowledge = async (reviewId) => {
     try {
       const res = await performanceReviewService.acknowledge(reviewId);
-      showSuccess(res?.data?.message || 'Appraisal acknowledged by employee.');
+      showSuccess(res?.data?.message || 'Appraisal acknowledged by employee.', res?.data?.header || 'Success');
       loadReviews();
     } catch (err) {
       showErrorPopup(err);
@@ -123,7 +126,7 @@ function PerformanceReviewPage() {
     if (!window.confirm(`Delete performance review record #${id}?`)) return;
     try {
       const res = await performanceReviewService.delete(id);
-      showSuccess(res?.data?.message || 'Appraisal record deleted.');
+      showSuccess(res?.data?.message || 'Appraisal record deleted.', res?.data?.header || 'Success');
       loadReviews();
     } catch (err) {
       showErrorPopup(err);
@@ -142,22 +145,7 @@ function PerformanceReviewPage() {
         <h1>Performance Reviews & Appraisals</h1>
         <button
           className="btn-primary-action"
-          onClick={() => {
-            setSelectedReview(null);
-            setFormData({
-              employeeId: '',
-              reviewerId: '',
-              reviewCycle: '2026-H1',
-              reviewPeriodStart: `${new Date().getFullYear()}-01-01`,
-              reviewPeriodEnd: `${new Date().getFullYear()}-06-30`,
-              achievements: '',
-              strengths: '',
-              areasOfImprovement: '',
-              goalsForNextCycle: '',
-              status: 'DRAFT',
-            });
-            setShowModal(true);
-          }}
+          onClick={() => navigate(REGISTRATION_ROUTES['performance-review'])}
         >
           + Initiate Performance Review
         </button>

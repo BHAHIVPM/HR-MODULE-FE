@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import mainGroupService from '../services/mainGroupService';
+import { REGISTRATION_ROUTES } from '../../registration/config/moduleRegistrationConfig';
 
 function MainGroupsTab({ mainGroups, setMainGroups, fetchMainGroups, showSuccess, showErrorPopup }) {
+  const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [editingGroup, setEditingGroup] = useState(null);
   const [form, setForm] = useState({ mainGroupName: '', iconPath: '' });
@@ -16,10 +19,10 @@ function MainGroupsTab({ mainGroups, setMainGroups, fetchMainGroups, showSuccess
       }
       if (editingGroup) {
         const res = await mainGroupService.update(editingGroup.mainGroupId, form);
-        showSuccess(res?.data?.message || 'Main Group updated successfully.');
+        showSuccess(res?.data?.message || 'Main Group updated successfully.', res?.data?.header || 'Success');
       } else {
         const res = await mainGroupService.add(form);
-        showSuccess(res?.data?.message || 'Main Group added successfully.');
+        showSuccess(res?.data?.message || 'Main Group added successfully.', res?.data?.header || 'Success');
       }
       setShowModal(false);
       setEditingGroup(null);
@@ -40,7 +43,7 @@ function MainGroupsTab({ mainGroups, setMainGroups, fetchMainGroups, showSuccess
     if (!window.confirm(`Delete Main Group "${name}"? This may affect associated menu items.`)) return;
     try {
       const res = await mainGroupService.delete(id);
-      showSuccess(res?.data?.message || 'Main Group deleted successfully.');
+      showSuccess(res?.data?.message || 'Main Group deleted successfully.', res?.data?.header || 'Success');
       fetchMainGroups();
     } catch (err) {
       showErrorPopup(err);
@@ -71,7 +74,7 @@ function MainGroupsTab({ mainGroups, setMainGroups, fetchMainGroups, showSuccess
     setDraggedRow(null);
     try {
       const res = await mainGroupService.reorder(reordered);
-      showSuccess(res?.data?.message || 'Main Groups reordered successfully.');
+      showSuccess(res?.data?.message || 'Main Groups reordered successfully.', res?.data?.header || 'Success');
     } catch (err) {
       showErrorPopup(err);
       fetchMainGroups();
@@ -82,7 +85,7 @@ function MainGroupsTab({ mainGroups, setMainGroups, fetchMainGroups, showSuccess
     <div className="tab-content">
       <div className="tab-header">
         <h2>Main Groups</h2>
-        <button className="btn-primary-action" onClick={() => { setEditingGroup(null); setForm({ mainGroupName: '', iconPath: '' }); setShowModal(true); }}>
+        <button className="btn-primary-action" onClick={() => navigate(REGISTRATION_ROUTES['main-group'])}>
           + Add Main Group
         </button>
       </div>

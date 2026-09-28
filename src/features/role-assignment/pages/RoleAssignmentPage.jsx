@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import RoleCreationPage from './RoleCreationPage';
 import RolePrivilegePage from './RolePrivilegePage';
 import UserRoleAssignmentPage from './UserRoleAssignmentPage';
@@ -13,7 +14,8 @@ const TABS = [
 ];
 
 function RoleAssignmentPage() {
-  const [activeTab, setActiveTab] = useState('role-creation');
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'role-creation');
 
   const renderContent = () => {
     switch (activeTab) {

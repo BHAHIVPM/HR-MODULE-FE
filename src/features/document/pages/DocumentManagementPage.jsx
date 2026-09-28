@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import documentService from '../services/documentService';
+import { REGISTRATION_ROUTES } from '../../registration/config/moduleRegistrationConfig';
 import { useNotification } from '../../../context/NotificationContext';
 import './DocumentManagementPage.css';
 
 function DocumentManagementPage() {
   const { showSuccess, showErrorPopup } = useNotification();
+  const navigate = useNavigate();
 
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -53,10 +56,10 @@ function DocumentManagementPage() {
 
       if (selectedDoc) {
         const res = await documentService.update(selectedDoc.documentId, payload);
-        showSuccess(res?.data?.message || 'Document details updated.');
+        showSuccess(res?.data?.message || 'Document details updated.', res?.data?.header || 'Success');
       } else {
         const res = await documentService.save(payload);
-        showSuccess(res?.data?.message || 'Document uploaded and logged.');
+        showSuccess(res?.data?.message || 'Document uploaded and logged.', res?.data?.header || 'Success');
       }
       setShowModal(false);
       loadDocuments();
@@ -68,7 +71,7 @@ function DocumentManagementPage() {
   const handleVerify = async (docId) => {
     try {
       const res = await documentService.verify(docId);
-      showSuccess(res?.data?.message || 'Document status set to VERIFIED.');
+      showSuccess(res?.data?.message || 'Document status set to VERIFIED.', res?.data?.header || 'Success');
       loadDocuments();
     } catch (err) {
       showErrorPopup(err);
@@ -79,7 +82,7 @@ function DocumentManagementPage() {
     if (!window.confirm(`Delete document record ${name}?`)) return;
     try {
       const res = await documentService.delete(id);
-      showSuccess(res?.data?.message || 'Document record deleted.');
+      showSuccess(res?.data?.message || 'Document record deleted.', res?.data?.header || 'Success');
       loadDocuments();
     } catch (err) {
       showErrorPopup(err);
@@ -99,20 +102,7 @@ function DocumentManagementPage() {
         <h1>Employee Document Vault</h1>
         <button
           className="btn-primary-action"
-          onClick={() => {
-            setSelectedDoc(null);
-            setFormData({
-              employeeId: '',
-              documentType: 'ID_PROOF',
-              documentName: '',
-              documentNumber: '',
-              filePath: '',
-              issuedDate: '',
-              expiryDate: '',
-              status: 'ACTIVE',
-            });
-            setShowModal(true);
-          }}
+          onClick={() => navigate(REGISTRATION_ROUTES.document)}
         >
           + Add Document Record
         </button>

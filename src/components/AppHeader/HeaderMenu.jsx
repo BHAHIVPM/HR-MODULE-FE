@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import authService from '../../features/auth/services/authService';
 import { useTheme, THEME_PRESETS } from '../../context/ThemeContext';
 import './HeaderMenu.css';
 
@@ -19,10 +20,34 @@ const MODE_OPTIONS = [
 function HeaderMenu() {
   const [open, setOpen] = useState(false);
   const menuRef = useRef(null);
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, user, setUser, clearUser } = useAuth();
   const { colors, updateColor, setThemeColors, colorMode, setColorMode, resolvedMode, systemPreference } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // GET /auth/about-me - keeps track of the logged-in user's profile
+  // (userId, name, email, mobileNo, userType, status). Called when the menu
+  // is opened and whenever the cached profile has been cleared, so the user
+  // info shown here is always backed by the backend.
+  useEffect(() => {
+    if (!open || !isAuthenticated) return undefined;
+    if (user) return undefined;
+    let cancelled = false;
+    authService
+      .aboutMe()
+      .then((res) => {
+        if (cancelled) return;
+        const output =
+          res?.data?.responseOutput ?? res?.data?.data ?? res?.data ?? null;
+        if (output) setUser(output);
+      })
+      .catch(() => {
+        // Profile fetch is non-fatal; the menu falls back to the placeholder.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, isAuthenticated, user, setUser]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -86,9 +111,22 @@ function HeaderMenu() {
                     <UserAvatarIcon />
                   </div>
                   <div className="header-menu-user-info">
-                    <span className="header-menu-user-name">Administrator</span>
-                    <span className="header-menu-user-status">Logged in</span>
+                    <span className="header-menu-user-name">
+                      {user?.name || user?.userName || 'Administrator'}
+                    </span>
+                    <span className="header-menu-user-status">
+                      {(user && [user.userType, user.status].filter(Boolean).join(' · ')) || 'Logged in'}
+                    </span>
                   </div>
+                  <button
+                    type="button"
+                    className="header-menu-user-refresh"
+                    title="Reload profile (about-me)"
+                    aria-label="Reload profile"
+                    onClick={() => clearUser()}
+                  >
+                    ↻
+                  </button>
                 </div>
                 {location.pathname !== '/dashboard' && (
                   <Link to="/dashboard" className="header-menu-item" role="menuitem" onClick={() => setOpen(false)}>

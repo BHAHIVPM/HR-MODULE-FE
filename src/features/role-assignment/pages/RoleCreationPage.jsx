@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useNotification } from '../../../context/NotificationContext';
 import roleService from '../services/roleService';
+import { REGISTRATION_ROUTES } from '../../registration/config/moduleRegistrationConfig';
 import './RoleCreationPage.css';
 
 const ROLE_CATEGORIES = [
@@ -21,6 +23,7 @@ function RoleCreationPage() {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deletingRole, setDeletingRole] = useState(null);
   const { showSuccess, showErrorPopup } = useNotification();
+  const navigate = useNavigate();
 
   const loadRoles = useCallback(async () => {
     setLoading(true);
@@ -38,9 +41,7 @@ function RoleCreationPage() {
   useEffect(() => { loadRoles(); }, [loadRoles]);
 
   const openCreateModal = () => {
-    setEditingRole(null);
-    setFormData({ roleName: '', remarks: '', roleCategory: '', system: false, editable: true, assignment: false });
-    setModalOpen(true);
+    navigate(REGISTRATION_ROUTES.role);
   };
 
   const openEditModal = (role) => {
@@ -63,10 +64,10 @@ function RoleCreationPage() {
           roleCategory: formData.roleCategory, system: formData.system,
         };
         const res = await roleService.updateRole(editingRole.roleId, updateData);
-        showSuccess(res?.message || 'Role updated successfully.', 'Updated');
+        showSuccess(res?.message || 'Role updated successfully.', res?.header || 'Updated');
       } else {
         const res = await roleService.createRole(formData);
-        showSuccess(res?.message || 'Role created successfully.', 'Created');
+        showSuccess(res?.message || 'Role created successfully.', res?.header || 'Created');
       }
       setModalOpen(false);
       loadRoles();
@@ -86,7 +87,7 @@ function RoleCreationPage() {
     if (!deletingRole) return;
     try {
       const res = await roleService.deleteRole(deletingRole.roleId);
-      showSuccess(res?.message || 'Role deleted successfully.', 'Deleted');
+      showSuccess(res?.message || 'Role deleted successfully.', res?.header || 'Deleted');
       setDeleteConfirmOpen(false);
       setDeletingRole(null);
       loadRoles();

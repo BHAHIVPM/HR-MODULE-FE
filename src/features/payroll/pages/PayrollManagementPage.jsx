@@ -1,13 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import salaryService from '../services/salaryService';
 import payrollService from '../services/payrollService';
 import bankDetailsService from '../services/bankDetailsService';
+import { REGISTRATION_ROUTES } from '../../registration/config/moduleRegistrationConfig';
 import { useNotification } from '../../../context/NotificationContext';
 import './PayrollManagementPage.css';
 
 function PayrollManagementPage() {
   const { showSuccess, showErrorPopup } = useNotification();
-  const [activeTab, setActiveTab] = useState('payroll'); // 'payroll' | 'salary' | 'bank'
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'payroll'); // 'payroll' | 'salary' | 'bank'
 
   const [payrolls, setPayrolls] = useState([]);
   const [salaries, setSalaries] = useState([]);
@@ -99,7 +103,7 @@ function PayrollManagementPage() {
     if (!genEmpId) return;
     try {
       const res = await payrollService.generate(parseInt(genEmpId, 10), parseInt(genMonth, 10), parseInt(genYear, 10));
-      showSuccess(res?.data?.message || `Payroll generated for Emp #${genEmpId}`);
+      showSuccess(res?.data?.message || `Payroll generated for Emp #${genEmpId}`, res?.data?.header || 'Success');
       setGenEmpId('');
       fetchPayrolls();
     } catch (err) {
@@ -111,7 +115,7 @@ function PayrollManagementPage() {
   const handleMarkPaid = async (payrollId) => {
     try {
       const res = await payrollService.markPaid(payrollId);
-      showSuccess(res?.data?.message || 'Payroll marked as PAID.');
+      showSuccess(res?.data?.message || 'Payroll marked as PAID.', res?.data?.header || 'Success');
       fetchPayrolls();
     } catch (err) {
       showErrorPopup(err);
@@ -123,7 +127,7 @@ function PayrollManagementPage() {
     if (!window.confirm(`Cancel payroll #${payrollId}?`)) return;
     try {
       const res = await payrollService.cancel(payrollId);
-      showSuccess(res?.data?.message || 'Payroll cancelled.');
+      showSuccess(res?.data?.message || 'Payroll cancelled.', res?.data?.header || 'Success');
       fetchPayrolls();
     } catch (err) {
       showErrorPopup(err);
@@ -151,10 +155,10 @@ function PayrollManagementPage() {
 
       if (selectedSalary) {
         const res = await salaryService.update(selectedSalary.salaryId, payload);
-        showSuccess(res?.data?.message || 'Salary structure updated.');
+        showSuccess(res?.data?.message || 'Salary structure updated.', res?.data?.header || 'Success');
       } else {
         const res = await salaryService.save(payload);
-        showSuccess(res?.data?.message || 'Salary structure saved.');
+        showSuccess(res?.data?.message || 'Salary structure saved.', res?.data?.header || 'Success');
       }
       setShowSalaryModal(false);
       fetchSalaries();
@@ -174,10 +178,10 @@ function PayrollManagementPage() {
 
       if (selectedBank) {
         const res = await bankDetailsService.update(selectedBank.bankDetailId, payload);
-        showSuccess(res?.data?.message || 'Bank details updated.');
+        showSuccess(res?.data?.message || 'Bank details updated.', res?.data?.header || 'Success');
       } else {
         const res = await bankDetailsService.save(payload);
-        showSuccess(res?.data?.message || 'Bank details saved.');
+        showSuccess(res?.data?.message || 'Bank details saved.', res?.data?.header || 'Success');
       }
       setShowBankModal(false);
       fetchBankDetails();
@@ -190,7 +194,7 @@ function PayrollManagementPage() {
     if (!window.confirm(`Delete salary structure #${id}?`)) return;
     try {
       const res = await salaryService.delete(id);
-      showSuccess(res?.data?.message || 'Salary structure deleted.');
+      showSuccess(res?.data?.message || 'Salary structure deleted.', res?.data?.header || 'Success');
       fetchSalaries();
     } catch (err) {
       showErrorPopup(err);
@@ -201,7 +205,7 @@ function PayrollManagementPage() {
     if (!window.confirm(`Delete bank account #${id}?`)) return;
     try {
       const res = await bankDetailsService.delete(id);
-      showSuccess(res?.data?.message || 'Bank details deleted.');
+      showSuccess(res?.data?.message || 'Bank details deleted.', res?.data?.header || 'Success');
       fetchBankDetails();
     } catch (err) {
       showErrorPopup(err);
@@ -268,25 +272,7 @@ function PayrollManagementPage() {
         {activeTab === 'salary' && (
           <button
             className="btn-primary-action"
-            onClick={() => {
-              setSelectedSalary(null);
-              setSalaryForm({
-                employeeId: '',
-                basicSalary: 30000,
-                hra: 12000,
-                conveyanceAllowance: 2000,
-                medicalAllowance: 1500,
-                specialAllowance: 5000,
-                otherAllowance: 0,
-                providentFund: 3600,
-                professionalTax: 200,
-                incomeTax: 1000,
-                otherDeductions: 0,
-                effectiveFrom: new Date().toISOString().split('T')[0],
-                status: 'ACTIVE',
-              });
-              setShowSalaryModal(true);
-            }}
+            onClick={() => navigate(REGISTRATION_ROUTES['salary-structure'])}
           >
             + Create Salary Structure
           </button>
@@ -294,21 +280,7 @@ function PayrollManagementPage() {
         {activeTab === 'bank' && (
           <button
             className="btn-primary-action"
-            onClick={() => {
-              setSelectedBank(null);
-              setBankForm({
-                employeeId: '',
-                bankName: '',
-                branchName: '',
-                accountNumber: '',
-                ifscCode: '',
-                accountHolderName: '',
-                accountType: 'SAVINGS',
-                isPrimary: true,
-                status: 'ACTIVE',
-              });
-              setShowBankModal(true);
-            }}
+            onClick={() => navigate(REGISTRATION_ROUTES['bank-details'])}
           >
             + Add Bank Account
           </button>

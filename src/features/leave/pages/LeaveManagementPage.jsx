@@ -1,12 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import leaveMasterService from '../services/leaveMasterService';
 import leaveApplicationService from '../services/leaveApplicationService';
+import { REGISTRATION_ROUTES } from '../../registration/config/moduleRegistrationConfig';
 import { useNotification } from '../../../context/NotificationContext';
 import './LeaveManagementPage.css';
 
 function LeaveManagementPage() {
   const { showSuccess, showErrorPopup } = useNotification();
-  const [activeTab, setActiveTab] = useState('applications'); // 'applications' | 'types'
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'applications'); // 'applications' | 'types'
 
   const [leaveTypes, setLeaveTypes] = useState([]);
   const [applications, setApplications] = useState([]);
@@ -80,7 +84,7 @@ function LeaveManagementPage() {
         noOfDays: parseFloat(applyForm.noOfDays),
       };
       const res = await leaveApplicationService.apply(payload);
-      showSuccess(res?.data?.message || 'Leave application submitted successfully.');
+      showSuccess(res?.data?.message || 'Leave application submitted successfully.', res?.data?.header || 'Success');
       setShowApplyModal(false);
       fetchApplications();
     } catch (err) {
@@ -100,10 +104,10 @@ function LeaveManagementPage() {
 
       if (selectedType) {
         const res = await leaveMasterService.update(selectedType.leaveTypeId, payload);
-        showSuccess(res?.data?.message || 'Leave type updated.');
+        showSuccess(res?.data?.message || 'Leave type updated.', res?.data?.header || 'Success');
       } else {
         const res = await leaveMasterService.save(payload);
-        showSuccess(res?.data?.message || 'New leave type created.');
+        showSuccess(res?.data?.message || 'New leave type created.', res?.data?.header || 'Success');
       }
       setShowTypeModal(false);
       fetchLeaveTypes();
@@ -153,10 +157,10 @@ function LeaveManagementPage() {
     try {
       if (type === 'APPROVE') {
         const res = await leaveApplicationService.approve(applicationId, approverNum, remarks);
-        showSuccess(res?.data?.message || 'Leave application approved!');
+        showSuccess(res?.data?.message || 'Leave application approved!', res?.data?.header || 'Success');
       } else {
         const res = await leaveApplicationService.reject(applicationId, approverNum, remarks);
-        showSuccess(res?.data?.message || 'Leave application rejected.');
+        showSuccess(res?.data?.message || 'Leave application rejected.', res?.data?.header || 'Success');
       }
       setActionModal((prev) => ({ ...prev, show: false }));
       fetchApplications();
@@ -170,7 +174,7 @@ function LeaveManagementPage() {
     if (!window.confirm(`Cancel leave application #${id}?`)) return;
     try {
       const res = await leaveApplicationService.cancel(id);
-      showSuccess(res?.data?.message || 'Leave application cancelled.');
+      showSuccess(res?.data?.message || 'Leave application cancelled.', res?.data?.header || 'Success');
       fetchApplications();
     } catch (err) {
       showErrorPopup(err);
@@ -182,7 +186,7 @@ function LeaveManagementPage() {
     if (!window.confirm(`Delete leave type ${name}?`)) return;
     try {
       const res = await leaveMasterService.delete(id);
-      showSuccess(res?.data?.message || 'Leave type deleted.');
+      showSuccess(res?.data?.message || 'Leave type deleted.', res?.data?.header || 'Success');
       fetchLeaveTypes();
     } catch (err) {
       showErrorPopup(err);
@@ -233,18 +237,7 @@ function LeaveManagementPage() {
             </div>
             <button
               className="btn-primary-action"
-              onClick={() => {
-                setApplyForm({
-                  employeeId: '',
-                  leaveTypeId: leaveTypes[0]?.leaveTypeId || '',
-                  fromDate: new Date().toISOString().split('T')[0],
-                  toDate: new Date().toISOString().split('T')[0],
-                  noOfDays: 1,
-                  reason: '',
-                  status: 'PENDING',
-                });
-                setShowApplyModal(true);
-              }}
+              onClick={() => navigate(REGISTRATION_ROUTES['leave-application'])}
             >
               + Apply For Leave
             </button>
@@ -252,18 +245,7 @@ function LeaveManagementPage() {
         ) : (
           <button
             className="btn-primary-action"
-            onClick={() => {
-              setSelectedType(null);
-              setTypeForm({
-                leaveTypeCode: '',
-                leaveTypeName: '',
-                defaultDaysPerYear: 12,
-                carryForwardAllowed: false,
-                maxCarryForwardDays: 0,
-                status: 'ACTIVE',
-              });
-              setShowTypeModal(true);
-            }}
+            onClick={() => navigate(REGISTRATION_ROUTES['leave-type'])}
           >
             + Create Leave Type
           </button>
