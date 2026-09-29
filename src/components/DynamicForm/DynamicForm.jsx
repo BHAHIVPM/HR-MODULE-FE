@@ -106,20 +106,6 @@ function DynamicForm({
         </div>
       )}
 
-      {error && (
-        <div className="dynamic-form-alert dynamic-form-alert-error" role="alert">
-          <AlertIcon />
-          <span>{error}</span>
-        </div>
-      )}
-
-      {success && (
-        <div className="dynamic-form-alert dynamic-form-alert-success" role="status">
-          <SuccessIcon />
-          <span>{success}</span>
-        </div>
-      )}
-
       <form className="dynamic-form" onSubmit={handleSubmit} noValidate>
         <div className="dynamic-form-grid">
           {fields.map((field) => (
