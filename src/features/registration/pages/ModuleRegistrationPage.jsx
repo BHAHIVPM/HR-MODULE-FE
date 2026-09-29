@@ -67,17 +67,19 @@ function ModuleRegistrationPage() {
       const validationError = config.validate ? config.validate(values) : null;
       if (validationError) {
         setError(validationError);
-        return;
+        return false;
       }
       const payload = config.transform ? config.transform(values) : values;
       const res = await config.save(payload);
       setSuccess(res?.data?.message || res?.message || config.successMessage);
+      return true;
     } catch (err) {
       setError(
         err?.response?.data?.message ||
           err?.message ||
           'Unable to save the record. Please try again.'
       );
+      return false;
     } finally {
       setSubmitting(false);
     }

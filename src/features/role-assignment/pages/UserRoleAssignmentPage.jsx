@@ -2,14 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNotification } from '../../../context/NotificationContext';
 import roleAssignmentService from '../services/roleAssignmentService';
 import useCurrentUser from '../../../hooks/useCurrentUser';
+import { getAllowedRoleCategories } from '../../../utils/roleCategoryUtils';
 import './RoleCreationPage.css';
-
-const USER_TYPES = [
-  { value: 'ALL', label: 'All Users' },
-  { value: 'SUPERADMIN', label: 'SuperAdmin' },
-  { value: 'ADMIN', label: 'Admin' },
-  { value: 'USER', label: 'User' },
-];
 
 function UserRoleAssignmentPage() {
   const [users, setUsers] = useState([]);
@@ -24,7 +18,12 @@ function UserRoleAssignmentPage() {
   const { showSuccess, showErrorPopup } = useNotification();
   // Self-edit protection: the logged-in user cannot assign or revoke roles
   // on their own login account.
-  const { isSelfId } = useCurrentUser();
+  const { isSelfId, currentUserType } = useCurrentUser();
+  const allowedCategories = getAllowedRoleCategories(currentUserType);
+  const filterUserTypeOptions = [
+    { value: 'ALL', label: 'All Users' },
+    ...allowedCategories,
+  ];
 
   const loadUsers = useCallback(async () => {
     setLoading(true);
@@ -106,7 +105,7 @@ function UserRoleAssignmentPage() {
         <div className="ra-card-header"><span className="ra-card-title">Select a User</span></div>
         <div className="ra-filter-bar">
           <select value={userTypeFilter} onChange={(e) => setUserTypeFilter(e.target.value)}>
-            {USER_TYPES.map((t) => (<option key={t.value} value={t.value}>{t.label}</option>))}
+            {filterUserTypeOptions.map((t) => (<option key={t.value} value={t.value}>{t.label}</option>))}
           </select>
           <span className="ra-badge">{filteredUsers.length} users</span>
         </div>
