@@ -272,13 +272,19 @@
 }
 
 .sidebar-main-group-row {
-  cursor: default;
+  cursor: pointer;
   color: rgba(255, 255, 255, 0.9);
+  user-select: none;
 }
 
 .sidebar-main-group-row:hover {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.06);
   color: var(--white);
+}
+
+.sidebar-main-group-row-open {
+  color: var(--white);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .sidebar-subgroup-label {

@@ -277,8 +277,9 @@ function renderStaticNav(location, navigate, isCollapsed) {
 // Backend-driven navigation built from GET /api/main-group-operation/full.
 // Menu names come straight from the backend response (English master data);
 // entries with canView === false are hidden.
-function renderBackendNav(menu, location, isCollapsed) {
+function renderBackendNav(menu, location, isCollapsed, expandedGroups, toggleGroup) {
   return menu.map((mainGroup) => {
+    const mgKey = String(mainGroup.mainGroupId ?? mainGroup.mainGroupName);
     const subGroups = Array.isArray(mainGroup.subGroup) ? mainGroup.subGroup : [];
     const groupsWithItems = subGroups.filter(
       (subGroup) =>
@@ -288,9 +289,34 @@ function renderBackendNav(menu, location, isCollapsed) {
     );
     if (groupsWithItems.length === 0) return null;
 
+    const currentFull = location.pathname + location.search;
+    const hasActiveChild = groupsWithItems.some((sg) =>
+      (Array.isArray(sg.subItems) ? sg.subItems : []).some((item) => {
+        const addPath = resolveAddPath(item.componentPath);
+        return (
+          currentFull === item.componentPath ||
+          (location.pathname === item.componentPath && !location.search) ||
+          (addPath && location.pathname === addPath)
+        );
+      })
+    );
+
+    const isOpen = expandedGroups[mgKey] !== undefined ? !!expandedGroups[mgKey] : hasActiveChild;
+
     return (
-      <div key={`mg-${mainGroup.mainGroupId ?? mainGroup.mainGroupName}`} className="sidebar-group">
-        <div className="sidebar-menu-row sidebar-main-group-row" data-tooltip={mainGroup.mainGroupName}>
+      <div key={`mg-${mgKey}`} className={`sidebar-group ${isOpen ? 'sidebar-group-open' : ''}`}>
+        <div
+          className={`sidebar-menu-row sidebar-main-group-row ${isOpen ? 'sidebar-main-group-row-open' : ''}`}
+          onClick={() => toggleGroup(mgKey)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              toggleGroup(mgKey);
+            }
+          }}
+          data-tooltip={mainGroup.mainGroupName}
+        >
           <div className="sidebar-menu-left">
             {mainGroup.iconPath ? (
               <i className={mainGroup.iconPath} style={{ fontSize: 16 }} aria-hidden="true" />
@@ -299,50 +325,54 @@ function renderBackendNav(menu, location, isCollapsed) {
             )}
             <span className="sidebar-menu-label">{mainGroup.mainGroupName}</span>
           </div>
+          {!isCollapsed && (
+            <ChevronIcon className={`sidebar-chevron ${isOpen ? 'sidebar-chevron-open' : ''}`} />
+          )}
         </div>
-        <ul className="sidebar-submenu">
-          {groupsWithItems.map((subGroup) => (
-            <Fragment key={`sg-${subGroup.subGroupId ?? `null-${mainGroup.mainGroupId}`}`}>
-              {subGroup.subGroupName ? (
-                <li className="sidebar-subgroup-label">{subGroup.subGroupName}</li>
-              ) : null}
-              {(Array.isArray(subGroup.subItems) ? subGroup.subItems : [])
-                .filter((item) => item.canView !== false)
-                .map((item) => {
-                  const currentFull = location.pathname + location.search;
-                  const isActive =
-                    !!item.componentPath &&
-                    (currentFull === item.componentPath ||
-                      (location.pathname === item.componentPath && !location.search));
-                  const addPath = resolveAddPath(item.componentPath);
-                  // Backend menu items expose the user's add privilege via canAdd.
-                  const showAdd = !!addPath && item.canAdd !== false;
-                  const isAddActive = showAdd && location.pathname === addPath;
-                  return (
-                    <li key={`it-${item.menuNameId}`} className="sidebar-sublink-row" data-tooltip={item.menuName}>
-                      <Link
-                        to={item.componentPath || '#'}
-                        className={`sidebar-sublink ${isActive ? 'sidebar-sublink-active' : ''}`}
-                      >
-                        {item.menuName}
-                      </Link>
-                      {showAdd && !isCollapsed && (
+        {(isOpen || isCollapsed) && (
+          <ul className="sidebar-submenu">
+            {groupsWithItems.map((subGroup) => (
+              <Fragment key={`sg-${subGroup.subGroupId ?? `null-${mainGroup.mainGroupId}`}`}>
+                {subGroup.subGroupName ? (
+                  <li className="sidebar-subgroup-label">{subGroup.subGroupName}</li>
+                ) : null}
+                {(Array.isArray(subGroup.subItems) ? subGroup.subItems : [])
+                  .filter((item) => item.canView !== false)
+                  .map((item) => {
+                    const isActive =
+                      !!item.componentPath &&
+                      (currentFull === item.componentPath ||
+                        (location.pathname === item.componentPath && !location.search));
+                    const addPath = resolveAddPath(item.componentPath);
+                    // Backend menu items expose the user's add privilege via canAdd.
+                    const showAdd = !!addPath && item.canAdd !== false;
+                    const isAddActive = showAdd && location.pathname === addPath;
+                    return (
+                      <li key={`it-${item.menuNameId}`} className="sidebar-sublink-row" data-tooltip={item.menuName}>
                         <Link
-                          to={addPath}
-                          className={`sidebar-add-btn sidebar-add-btn-sm ${isAddActive ? 'sidebar-add-btn-active' : ''}`}
-                          title={`Register / Add ${item.menuName}`}
-                          aria-label={`Add ${item.menuName}`}
-                          onClick={(e) => e.stopPropagation()}
+                          to={item.componentPath || '#'}
+                          className={`sidebar-sublink ${isActive ? 'sidebar-sublink-active' : ''}`}
                         >
-                          +
+                          {item.menuName}
                         </Link>
-                      )}
-                    </li>
-                  );
-                })}
-            </Fragment>
-          ))}
-        </ul>
+                        {showAdd && !isCollapsed && (
+                          <Link
+                            to={addPath}
+                            className={`sidebar-add-btn sidebar-add-btn-sm ${isAddActive ? 'sidebar-add-btn-active' : ''}`}
+                            title={`Register / Add ${item.menuName}`}
+                            aria-label={`Add ${item.menuName}`}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            +
+                          </Link>
+                        )}
+                      </li>
+                    );
+                  })}
+              </Fragment>
+            ))}
+          </ul>
+        )}
       </div>
     );
   });
@@ -354,6 +384,14 @@ function MainLayout() {
   const navigate = useNavigate();
   const [menu, setMenu] = useState(null);
   const [menuError, setMenuError] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState({});
+
+  const toggleGroup = useCallback((groupKey) => {
+    setExpandedGroups((prev) => ({
+      ...prev,
+      [groupKey]: !prev[groupKey],
+    }));
+  }, []);
 
   const [isCollapsed, setIsCollapsed] = useState(() => {
     const saved = localStorage.getItem('hr_sidebar_collapsed');
@@ -398,7 +436,7 @@ function MainLayout() {
     // entries, so developers are covered here too).
     navContent = renderStaticNav(location, navigate, isCollapsed);
   } else if (Array.isArray(effectiveMenu) && effectiveMenu.length > 0) {
-    navContent = renderBackendNav(effectiveMenu, location, isCollapsed);
+    navContent = renderBackendNav(effectiveMenu, location, isCollapsed, expandedGroups, toggleGroup);
   } else if (Array.isArray(menu)) {
     // Backend answered but the account has no menus assigned.
     navContent = (
@@ -601,6 +639,14 @@ function RoleAssignmentIcon() {
     <svg viewBox="0 0 20 20" width="18" height="18" fill="none" aria-hidden="true">
       <path d="M10 2L13 4L15 2.5L16.5 5L19 5.5L18 8L19.5 10L17 11.5L17.5 14L15 14.5L13.5 17L10 15.5L6.5 17L5 14.5L2.5 14L3 11.5L0.5 10L2 8L1 5.5L3.5 5L5 2.5L7 4L10 2Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
       <circle cx="10" cy="10" r="2.5" stroke="currentColor" strokeWidth="1.5" />
+    </svg>
+  );
+}
+
+function ChevronIcon({ className = '' }) {
+  return (
+    <svg viewBox="0 0 20 20" width="16" height="16" fill="none" className={className} aria-hidden="true">
+      <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }

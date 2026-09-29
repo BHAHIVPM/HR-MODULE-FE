@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import DynamicForm from '../../../components/DynamicForm/DynamicForm';
+import { useNotification } from '../../../context/NotificationContext';
 import {
   buildUserRegistrationFields,
   getAllowedCreatableUserTypes,
@@ -12,8 +13,8 @@ import useCurrentUser from '../../../hooks/useCurrentUser';
 import './RegistrationPage.css';
 
 function UserRegistrationPage() {
+  const { showErrorPopup } = useNotification();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [createdUserResult, setCreatedUserResult] = useState(null);
   const [copied, setCopied] = useState(false);
 
@@ -32,20 +33,23 @@ function UserRegistrationPage() {
   const handleSubmit = async (data) => {
     setCreatedUserResult(null);
     setCopied(false);
-    setError(null);
 
     if (!data.userType) {
-      setError('Please select a User Type.');
+      showErrorPopup({
+        title: 'Validation Error',
+        message: 'Please select a User Type.',
+      });
       return false;
     }
     // Defence in depth: the dropdown only offers the allowed types, but never
     // trust a value that could have been tampered with in the browser.
     if (allowedUserTypes && !allowedUserTypes.includes(data.userType)) {
-      setError(
-        `A ${loginTypeLabel} account can only create ${allowedUserTypes
+      showErrorPopup({
+        title: 'Validation Error',
+        message: `A ${loginTypeLabel} account can only create ${allowedUserTypes
           .map(getUserTypeLabel)
-          .join(' / ')} users.`
-      );
+          .join(' / ')} users.`,
+      });
       return false;
     }
 
@@ -67,11 +71,7 @@ function UserRegistrationPage() {
       }
       return true;
     } catch (err) {
-      const msg =
-        err.response?.data?.message ||
-        err.message ||
-        'Registration failed. Ensure backend is running.';
-      setError(msg);
+      showErrorPopup(err);
       return false;
     } finally {
       setLoading(false);
@@ -175,7 +175,6 @@ function UserRegistrationPage() {
         onSubmit={handleSubmit}
         submitLabel="Register User"
         loading={loading}
-        error={error}
         title="User Registration"
         subtitle="Create a new portal login account (UserLogin model)."
       />

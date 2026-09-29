@@ -15,6 +15,16 @@ jest.mock('react-router-dom', () => {
   };
 });
 
+const mockShowErrorPopup = jest.fn();
+
+jest.mock('../../../context/NotificationContext', () => ({
+  __esModule: true,
+  useNotification: () => ({
+    showSuccess: jest.fn(),
+    showErrorPopup: mockShowErrorPopup,
+  }),
+}));
+
 jest.mock('../../../hooks/useCurrentUser', () => ({
   __esModule: true,
   default: jest.fn(),
@@ -89,7 +99,12 @@ describe('UserRegistrationPage User Type dropdown follows the logged-in user', (
     fireEvent.change(userTypeSelect(), { target: { value: '' } });
     fireEvent.click(screen.getByRole('button', { name: /register user/i }));
 
-    expect(await screen.findByText(/Please select a User Type/i)).toBeInTheDocument();
+    expect(mockShowErrorPopup).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Validation Error',
+        message: 'Please select a User Type.',
+      })
+    );
     expect(registrationService.registerUser).not.toHaveBeenCalled();
   });
 });

@@ -1,28 +1,23 @@
 import { useState } from 'react';
 import DynamicForm from '../../../components/DynamicForm/DynamicForm';
+import { useNotification } from '../../../context/NotificationContext';
 import { clientRegistrationFields } from '../config/registrationFields';
 import registrationService from '../services/registrationService';
 import './RegistrationPage.css';
 
 function ClientRegistrationPage() {
+  const { showSuccess, showErrorPopup } = useNotification();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
 
   const handleSubmit = async (data) => {
     setLoading(true);
-    setError(null);
-    setSuccess(null);
     try {
-      await registrationService.registerClient(data);
-      setSuccess('Client registered successfully.');
+      const res = await registrationService.registerClient(data);
+      const msg = res?.data?.message || 'Client registered successfully.';
+      showSuccess(msg);
       return true;
     } catch (err) {
-      const msg =
-        err.response?.data?.message ||
-        err.message ||
-        'Registration failed. Ensure the backend dummy endpoint is running on port 8080.';
-      setError(msg);
+      showErrorPopup(err);
       return false;
     } finally {
       setLoading(false);
@@ -36,8 +31,6 @@ function ClientRegistrationPage() {
         onSubmit={handleSubmit}
         submitLabel="Register Client"
         loading={loading}
-        error={error}
-        success={success}
         title="Client Registration"
         subtitle="Onboard a new client tenant (ClientDetails model)."
       />
