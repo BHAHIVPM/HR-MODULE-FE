@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import DynamicForm from '../../../components/DynamicForm/DynamicForm';
+import { useNotification } from '../../../context/NotificationContext';
 import {
   MODULE_REGISTRATIONS,
   REGISTRATION_LOOKUPS,
@@ -16,13 +17,12 @@ import './RegistrationPage.css';
 function ModuleRegistrationPage() {
   const { moduleKey } = useParams();
   const navigate = useNavigate();
+  const { showSuccess, showErrorPopup } = useNotification();
   const config = MODULE_REGISTRATIONS[moduleKey];
 
   const [lookups, setLookups] = useState({});
   const [loadingLookups, setLoadingLookups] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
 
   const lookupKey = config?.lookups ? config.lookups.join('|') : '';
 
@@ -61,23 +61,25 @@ function ModuleRegistrationPage() {
 
   const handleSubmit = async (values) => {
     setSubmitting(true);
-    setError(null);
-    setSuccess(null);
     try {
       const validationError = config.validate ? config.validate(values) : null;
       if (validationError) {
-        setError(validationError);
-        return;
+        showErrorPopup({
+          title: 'Validation Error',
+          message: validationError,
+        });
+        return false;
       }
       const payload = config.transform ? config.transform(values) : values;
       const res = await config.save(payload);
-      setSuccess(res?.data?.message || res?.message || config.successMessage);
+      const msg = res?.data?.message || res?.message || config.successMessage;
+      if (msg) {
+        showSuccess(msg);
+      }
+      return true;
     } catch (err) {
-      setError(
-        err?.response?.data?.message ||
-          err?.message ||
-          'Unable to save the record. Please try again.'
-      );
+      showErrorPopup(err);
+      return false;
     } finally {
       setSubmitting(false);
     }
@@ -106,8 +108,6 @@ function ModuleRegistrationPage() {
         onSubmit={handleSubmit}
         submitLabel={config.submitLabel}
         loading={submitting}
-        error={error}
-        success={success}
         title={config.title}
         subtitle={config.subtitle}
         cancelLabel={`Back to ${config.listTitle}`}

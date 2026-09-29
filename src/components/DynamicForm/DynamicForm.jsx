@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import './DynamicForm.css';
 
 /**
@@ -20,6 +20,13 @@ import './DynamicForm.css';
  *   rows?: number,    // textarea rows
  * }
  */
+function getInitialValues(fieldList) {
+  return (fieldList || []).reduce((acc, field) => {
+    acc[field.name] = field.defaultValue ?? '';
+    return acc;
+  }, {});
+}
+
 function DynamicForm({
   fields,
   onSubmit,
@@ -32,21 +39,58 @@ function DynamicForm({
   cancelLabel,
   onCancel,
 }) {
-  const initialValues = fields.reduce((acc, field) => {
-    acc[field.name] = field.defaultValue ?? '';
-    return acc;
-  }, {});
-
-  const [values, setValues] = useState(initialValues);
+  const [values, setValues] = useState(() => getInitialValues(fields));
   const [showPasswords, setShowPasswords] = useState({});
+
+  // Keep the values valid when the field config changes AFTER mount:
+  //  - select options can be resolved asynchronously (e.g. the user-creation
+  //    User Type dropdown follows the logged-in profile), so a value that is
+  //    no longer offered falls back to the field default - otherwise the
+  //    <select> would render its first option while submitting the stale value;
+  //  - fields introduced by a new config (e.g. switching to another module's
+  //    form) receive their default value so their inputs stay controlled.
+  useEffect(() => {
+    setValues((prev) => {
+      let changed = false;
+      const next = { ...prev };
+      fields.forEach((field) => {
+        if (!(field.name in prev)) {
+          next[field.name] = field.defaultValue ?? '';
+          changed = true;
+          return;
+        }
+        const optionValues = Array.isArray(field.options)
+          ? field.options.map((option) => option.value)
+          : [];
+        const current = prev[field.name];
+        const isEmpty = current === '' || current === undefined || current === null;
+        if (optionValues.length === 0 || isEmpty) return;
+        if (!optionValues.includes(current)) {
+          next[field.name] = optionValues.includes(field.defaultValue)
+            ? field.defaultValue
+            : optionValues[0];
+          changed = true;
+        }
+      });
+      return changed ? next : prev;
+    });
+  }, [fields]);
 
   const handleChange = (name, value) => {
     setValues((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSubmit(values);
+    if (!onSubmit) return;
+    try {
+      const result = await onSubmit(values);
+      if (result !== false) {
+        setValues(getInitialValues(fields));
+      }
+    } catch {
+      // On submission failure/exception, retain existing input values in form
+    }
   };
 
   const togglePassword = (name) => {
@@ -59,20 +103,6 @@ function DynamicForm({
         <div className="dynamic-form-header">
           {title && <h2>{title}</h2>}
           {subtitle && <p>{subtitle}</p>}
-        </div>
-      )}
-
-      {error && (
-        <div className="dynamic-form-alert dynamic-form-alert-error" role="alert">
-          <AlertIcon />
-          <span>{error}</span>
-        </div>
-      )}
-
-      {success && (
-        <div className="dynamic-form-alert dynamic-form-alert-success" role="status">
-          <SuccessIcon />
-          <span>{success}</span>
         </div>
       )}
 

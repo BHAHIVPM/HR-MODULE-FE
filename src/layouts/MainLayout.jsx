@@ -108,13 +108,37 @@ const NAV_ITEMS = [
 // ---------------------------------------------------------------------------
 // The first user in the system is a seeded DEVELOPER account. Nobody can assign
 // role privileges to it yet (role assignment itself requires a user who already
-// has privileges), so the modules needed to bootstrap the system - Role
+// has privileges), so the modules needed to bootstrap the system - User
+// Management (create users and assign their user type, e.g. SUPERADMIN), Role
 // Assignment (holds the Role Privileges tab) and Menu Management (defines what
 // every menu contains) - MUST always be reachable for developer accounts,
 // otherwise the bootstrap user is locked out of the very screens needed to
 // grant itself access. Every other user type relies purely on the
 // menu-management / privilege configuration returned by the backend.
 const MANDATORY_DEVELOPER_MENUS = [
+  {
+    mainGroupId: 'dev-mandatory-user-management',
+    mainGroupName: 'User Management',
+    // iconPath intentionally omitted -> sidebar renders the default menu icon
+    subGroup: [
+      {
+        subGroupId: 'dev-mandatory-user-management-group',
+        subGroupName: null,
+        subItems: [
+          {
+            menuNameId: 'dev-mandatory-user-management-item',
+            menuName: 'User Management',
+            componentPath: '/userData',
+            canView: true,
+            // canAdd true so the sidebar's "+ Add" button (which routes to
+            // /registrations/user) is shown, letting the developer create new
+            // users and assign their user type / role from there.
+            canAdd: true,
+          },
+        ],
+      },
+    ],
+  },
   {
     mainGroupId: 'dev-mandatory-role-assignment',
     mainGroupName: 'Role Assignment',
@@ -144,9 +168,30 @@ const MANDATORY_DEVELOPER_MENUS = [
         subGroupName: null,
         subItems: [
           {
-            menuNameId: 'dev-mandatory-menu-management-item',
-            menuName: 'Menu Management',
-            componentPath: '/menu-management',
+            menuNameId: 'dev-mandatory-main-groups-item',
+            menuName: 'Main Groups',
+            componentPath: '/menu-management?tab=mainGroups',
+            canView: true,
+            canAdd: true,
+          },
+          {
+            menuNameId: 'dev-mandatory-sub-groups-item',
+            menuName: 'Sub Groups',
+            componentPath: '/menu-management?tab=subGroups',
+            canView: true,
+            canAdd: true,
+          },
+          {
+            menuNameId: 'dev-mandatory-menu-items-item',
+            menuName: 'Menu Items',
+            componentPath: '/menu-management?tab=menuItems',
+            canView: true,
+            canAdd: true,
+          },
+          {
+            menuNameId: 'dev-mandatory-menu-preview-item',
+            menuName: 'Menu Preview',
+            componentPath: '/menu-management?tab=menuPreview',
             canView: true,
             canAdd: false,
           },
@@ -158,11 +203,14 @@ const MANDATORY_DEVELOPER_MENUS = [
 
 // True when `menu` already contains a VISIBLE item pointing at `componentPath`.
 function menuHasVisibleItem(menu, componentPath) {
+  const normTarget = componentPath ? componentPath.split('?')[0] : '';
   return (Array.isArray(menu) ? menu : []).some((mainGroup) =>
     (Array.isArray(mainGroup?.subGroup) ? mainGroup.subGroup : []).some((subGroup) =>
-      (Array.isArray(subGroup?.subItems) ? subGroup.subItems : []).some(
-        (item) => item?.componentPath === componentPath && item?.canView !== false
-      )
+      (Array.isArray(subGroup?.subItems) ? subGroup.subItems : []).some((item) => {
+        if (!item?.componentPath || item?.canView === false) return false;
+        const normItem = item.componentPath.split('?')[0];
+        return normItem === normTarget;
+      })
     )
   );
 }
@@ -174,15 +222,15 @@ function menuHasVisibleItem(menu, componentPath) {
 function ensureMandatoryDeveloperMenus(menu) {
   const base = Array.isArray(menu) ? menu : [];
   const missing = MANDATORY_DEVELOPER_MENUS.filter((mandatory) => {
-    const item = mandatory.subGroup[0].subItems[0];
-    return !menuHasVisibleItem(base, item.componentPath);
+    const items = mandatory.subGroup[0]?.subItems || [];
+    return !items.some((item) => menuHasVisibleItem(base, item.componentPath));
   });
   return missing.length > 0 ? [...base, ...missing] : base;
 }
 
 // Static navigation fallback: used only when the backend menu could not be loaded,
 // so the app stays navigable during network/server failures.
-function renderStaticNav(location, navigate) {
+function renderStaticNav(location, navigate, isCollapsed) {
   return NAV_ITEMS.map((item) => {
     const isListActive = location.pathname === item.listPath;
     const isFormActive = item.formPath && location.pathname === item.formPath;
@@ -195,6 +243,7 @@ function renderStaticNav(location, navigate) {
         onClick={() => navigate(item.listPath)}
         role="button"
         tabIndex={0}
+        data-tooltip={item.label}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             navigate(item.listPath);
@@ -206,7 +255,7 @@ function renderStaticNav(location, navigate) {
           <span className="sidebar-menu-label">{item.label}</span>
         </div>
 
-        {item.formPath && (
+        {item.formPath && !isCollapsed && (
           <button
             type="button"
             className={`sidebar-add-btn ${isFormActive ? 'sidebar-add-btn-active' : ''}`}
@@ -228,8 +277,9 @@ function renderStaticNav(location, navigate) {
 // Backend-driven navigation built from GET /api/main-group-operation/full.
 // Menu names come straight from the backend response (English master data);
 // entries with canView === false are hidden.
-function renderBackendNav(menu, location) {
+function renderBackendNav(menu, location, isCollapsed, expandedGroups, toggleGroup) {
   return menu.map((mainGroup) => {
+    const mgKey = String(mainGroup.mainGroupId ?? mainGroup.mainGroupName);
     const subGroups = Array.isArray(mainGroup.subGroup) ? mainGroup.subGroup : [];
     const groupsWithItems = subGroups.filter(
       (subGroup) =>
@@ -239,9 +289,34 @@ function renderBackendNav(menu, location) {
     );
     if (groupsWithItems.length === 0) return null;
 
+    const currentFull = location.pathname + location.search;
+    const hasActiveChild = groupsWithItems.some((sg) =>
+      (Array.isArray(sg.subItems) ? sg.subItems : []).some((item) => {
+        const addPath = resolveAddPath(item.componentPath);
+        return (
+          currentFull === item.componentPath ||
+          (location.pathname === item.componentPath && !location.search) ||
+          (addPath && location.pathname === addPath)
+        );
+      })
+    );
+
+    const isOpen = expandedGroups[mgKey] !== undefined ? !!expandedGroups[mgKey] : hasActiveChild;
+
     return (
-      <div key={`mg-${mainGroup.mainGroupId ?? mainGroup.mainGroupName}`} className="sidebar-group">
-        <div className="sidebar-menu-row sidebar-main-group-row">
+      <div key={`mg-${mgKey}`} className={`sidebar-group ${isOpen ? 'sidebar-group-open' : ''}`}>
+        <div
+          className={`sidebar-menu-row sidebar-main-group-row ${isOpen ? 'sidebar-main-group-row-open' : ''}`}
+          onClick={() => toggleGroup(mgKey)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              toggleGroup(mgKey);
+            }
+          }}
+          data-tooltip={mainGroup.mainGroupName}
+        >
           <div className="sidebar-menu-left">
             {mainGroup.iconPath ? (
               <i className={mainGroup.iconPath} style={{ fontSize: 16 }} aria-hidden="true" />
@@ -250,46 +325,54 @@ function renderBackendNav(menu, location) {
             )}
             <span className="sidebar-menu-label">{mainGroup.mainGroupName}</span>
           </div>
+          {!isCollapsed && (
+            <ChevronIcon className={`sidebar-chevron ${isOpen ? 'sidebar-chevron-open' : ''}`} />
+          )}
         </div>
-        <ul className="sidebar-submenu">
-          {groupsWithItems.map((subGroup) => (
-            <Fragment key={`sg-${subGroup.subGroupId ?? `null-${mainGroup.mainGroupId}`}`}>
-              {subGroup.subGroupName ? (
-                <li className="sidebar-subgroup-label">{subGroup.subGroupName}</li>
-              ) : null}
-              {(Array.isArray(subGroup.subItems) ? subGroup.subItems : [])
-                .filter((item) => item.canView !== false)
-                .map((item) => {
-                  const isActive = !!item.componentPath && location.pathname === item.componentPath;
-                  const addPath = resolveAddPath(item.componentPath);
-                  // Backend menu items expose the user's add privilege via canAdd.
-                  const showAdd = !!addPath && item.canAdd !== false;
-                  const isAddActive = showAdd && location.pathname === addPath;
-                  return (
-                    <li key={`it-${item.menuNameId}`} className="sidebar-sublink-row">
-                      <Link
-                        to={item.componentPath || '#'}
-                        className={`sidebar-sublink ${isActive ? 'sidebar-sublink-active' : ''}`}
-                      >
-                        {item.menuName}
-                      </Link>
-                      {showAdd && (
+        {(isOpen || isCollapsed) && (
+          <ul className="sidebar-submenu">
+            {groupsWithItems.map((subGroup) => (
+              <Fragment key={`sg-${subGroup.subGroupId ?? `null-${mainGroup.mainGroupId}`}`}>
+                {subGroup.subGroupName ? (
+                  <li className="sidebar-subgroup-label">{subGroup.subGroupName}</li>
+                ) : null}
+                {(Array.isArray(subGroup.subItems) ? subGroup.subItems : [])
+                  .filter((item) => item.canView !== false)
+                  .map((item) => {
+                    const isActive =
+                      !!item.componentPath &&
+                      (currentFull === item.componentPath ||
+                        (location.pathname === item.componentPath && !location.search));
+                    const addPath = resolveAddPath(item.componentPath);
+                    // Backend menu items expose the user's add privilege via canAdd.
+                    const showAdd = !!addPath && item.canAdd !== false;
+                    const isAddActive = showAdd && location.pathname === addPath;
+                    return (
+                      <li key={`it-${item.menuNameId}`} className="sidebar-sublink-row" data-tooltip={item.menuName}>
                         <Link
-                          to={addPath}
-                          className={`sidebar-add-btn sidebar-add-btn-sm ${isAddActive ? 'sidebar-add-btn-active' : ''}`}
-                          title={`Register / Add ${item.menuName}`}
-                          aria-label={`Add ${item.menuName}`}
-                          onClick={(e) => e.stopPropagation()}
+                          to={item.componentPath || '#'}
+                          className={`sidebar-sublink ${isActive ? 'sidebar-sublink-active' : ''}`}
                         >
-                          +
+                          {item.menuName}
                         </Link>
-                      )}
-                    </li>
-                  );
-                })}
-            </Fragment>
-          ))}
-        </ul>
+                        {showAdd && !isCollapsed && (
+                          <Link
+                            to={addPath}
+                            className={`sidebar-add-btn sidebar-add-btn-sm ${isAddActive ? 'sidebar-add-btn-active' : ''}`}
+                            title={`Register / Add ${item.menuName}`}
+                            aria-label={`Add ${item.menuName}`}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            +
+                          </Link>
+                        )}
+                      </li>
+                    );
+                  })}
+              </Fragment>
+            ))}
+          </ul>
+        )}
       </div>
     );
   });
@@ -301,8 +384,32 @@ function MainLayout() {
   const navigate = useNavigate();
   const [menu, setMenu] = useState(null);
   const [menuError, setMenuError] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState({});
+
+  const toggleGroup = useCallback((groupKey) => {
+    setExpandedGroups((prev) => ({
+      ...prev,
+      [groupKey]: !prev[groupKey],
+    }));
+  }, []);
+
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    const saved = localStorage.getItem('hr_sidebar_collapsed');
+    if (saved !== null) return JSON.parse(saved);
+    return window.innerWidth <= 1024;
+  });
+
+  const toggleSidebar = () => {
+    setIsCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem('hr_sidebar_collapsed', JSON.stringify(next));
+      return next;
+    });
+  };
+
   // DEVELOPER accounts (the seeded bootstrap user) always keep access to the
-  // Role Assignment and Menu Management modules - see MANDATORY_DEVELOPER_MENUS.
+  // User Management, Role Assignment and Menu Management modules - see
+  // MANDATORY_DEVELOPER_MENUS.
   const { currentUserType } = useCurrentUser();
   const isDeveloperUser = String(currentUserType || '').trim().toUpperCase() === 'DEVELOPER';
   const effectiveMenu = isDeveloperUser ? ensureMandatoryDeveloperMenus(menu) : menu;
@@ -325,10 +432,11 @@ function MainLayout() {
   let navContent = null;
   if (menuError) {
     // Server failure: static fallback keeps the app navigable (it already
-    // contains the Role Assignment entry, so developers are covered here too).
-    navContent = renderStaticNav(location, navigate);
+    // contains the User Management, Role Assignment and Menu Management
+    // entries, so developers are covered here too).
+    navContent = renderStaticNav(location, navigate, isCollapsed);
   } else if (Array.isArray(effectiveMenu) && effectiveMenu.length > 0) {
-    navContent = renderBackendNav(effectiveMenu, location);
+    navContent = renderBackendNav(effectiveMenu, location, isCollapsed, expandedGroups, toggleGroup);
   } else if (Array.isArray(menu)) {
     // Backend answered but the account has no menus assigned.
     navContent = (
@@ -340,13 +448,19 @@ function MainLayout() {
 
   return (
     <div className="main-layout">
-      <aside className="main-layout-sidebar">
+      <aside className={`main-layout-sidebar ${isCollapsed ? 'is-collapsed' : ''}`}>
         <div className="sidebar-brand">
-          <div className="sidebar-mark">
-            <svg viewBox="0 0 32 32" width="18" height="18" fill="none">
-              <path d="M16 2 L29 9 V23 L16 30 L3 23 V9 Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+          <button
+            type="button"
+            className={`sidebar-mark ${isCollapsed ? 'sidebar-mark-collapsed' : ''}`}
+            onClick={toggleSidebar}
+            title={isCollapsed ? "Expand menu" : "Collapse menu"}
+            aria-label={isCollapsed ? "Expand menu" : "Collapse menu"}
+          >
+            <svg viewBox="0 0 32 32" width="20" height="20" fill="none" className="hexagon-icon">
+              <path d="M16 2 L29 9 V23 L16 30 L3 23 V9 Z" stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round" />
             </svg>
-          </div>
+          </button>
           <span className="sidebar-title">HR Module</span>
         </div>
 
@@ -525,6 +639,14 @@ function RoleAssignmentIcon() {
     <svg viewBox="0 0 20 20" width="18" height="18" fill="none" aria-hidden="true">
       <path d="M10 2L13 4L15 2.5L16.5 5L19 5.5L18 8L19.5 10L17 11.5L17.5 14L15 14.5L13.5 17L10 15.5L6.5 17L5 14.5L2.5 14L3 11.5L0.5 10L2 8L1 5.5L3.5 5L5 2.5L7 4L10 2Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
       <circle cx="10" cy="10" r="2.5" stroke="currentColor" strokeWidth="1.5" />
+    </svg>
+  );
+}
+
+function ChevronIcon({ className = '' }) {
+  return (
+    <svg viewBox="0 0 20 20" width="16" height="16" fill="none" className={className} aria-hidden="true">
+      <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }

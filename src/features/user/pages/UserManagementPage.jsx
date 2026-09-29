@@ -3,12 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import userService from '../services/userService';
 import { useNotification } from '../../../context/NotificationContext';
 import useCurrentUser from '../../../hooks/useCurrentUser';
+import { getAllowedRoleCategoryValues, getRoleCategoryLabel } from '../../../utils/roleCategoryUtils';
 import './UserManagementPage.css';
-
-// Standard user types offered by the edit form (matches the registration form).
-// Values outside this list (e.g. DB-seeded roles like DEVELOPER) are still shown
-// by prepending them to the options when the edited record has such a value.
-const USER_TYPE_OPTIONS = ['ADMIN', 'EMPLOYEE', 'USER'];
 
 function UserManagementPage() {
   const [users, setUsers] = useState([]);
@@ -19,7 +15,9 @@ function UserManagementPage() {
   const { showSuccess, showErrorPopup } = useNotification();
   // Self-edit protection: resolves the logged-in user's identity so that
   // identity/access fields of the CURRENT user cannot be changed by himself.
-  const { isSelfId } = useCurrentUser();
+  const { isSelfId, currentUserType } = useCurrentUser();
+  const allowedUserTypes = getAllowedRoleCategoryValues(currentUserType);
+  const availableUserTypeOptions = allowedUserTypes.length > 0 ? allowedUserTypes : ['ADMIN', 'EMPLOYEE', 'USER'];
 
   // True when the record being edited in the modal belongs to the logged-in user.
   const editingIsSelf = editingUser ? isSelfId(editingUser.userId) : false;
@@ -267,15 +265,11 @@ function UserManagementPage() {
                   disabled={editingIsSelf}
                   style={editingIsSelf ? { opacity: 0.6, cursor: 'not-allowed' } : undefined}
                 >
-                  {/* A record may hold a userType seeded directly in the DB (e.g. DEVELOPER)
-                      that is not part of the standard form options. A <select> whose value
-                      matches no <option> silently displays its first option instead, which
-                      would show a false role - so always include the current value first. */}
-                  {(USER_TYPE_OPTIONS.includes(editFormData.userType)
-                    ? USER_TYPE_OPTIONS
-                    : [editFormData.userType, ...USER_TYPE_OPTIONS]
+                  {(availableUserTypeOptions.includes(editFormData.userType)
+                    ? availableUserTypeOptions
+                    : [editFormData.userType, ...availableUserTypeOptions]
                   ).map((type) => (
-                    <option key={type} value={type}>{type}</option>
+                    <option key={type} value={type}>{getRoleCategoryLabel(type)}</option>
                   ))}
                 </select>
                 {editingIsSelf && (

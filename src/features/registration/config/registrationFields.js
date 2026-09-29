@@ -1,4 +1,51 @@
-export const userRegistrationFields = [
+import {
+  CREATABLE_USER_TYPES,
+  USER_TYPE_LABELS,
+  UNCLASSIFIED_LOGIN_USER_TYPES,
+  normalizeRoleCategory as normalizeUserType,
+  getRoleCategoryLabel as getUserTypeLabel,
+  getAllowedCreatableUserTypes,
+} from '../../../utils/roleCategoryUtils';
+
+export {
+  CREATABLE_USER_TYPES,
+  USER_TYPE_LABELS,
+  UNCLASSIFIED_LOGIN_USER_TYPES,
+  normalizeUserType,
+  getUserTypeLabel,
+  getAllowedCreatableUserTypes,
+};
+
+/** User Type field whose options follow the logged-in account type. */
+const buildUserTypeField = (currentUserType) => {
+  const loginType = normalizeUserType(currentUserType);
+  const allowed = getAllowedCreatableUserTypes(currentUserType);
+  const values = allowed === null ? UNCLASSIFIED_LOGIN_USER_TYPES : allowed;
+
+  return {
+    name: 'userType',
+    label: 'User Type',
+    type: 'select',
+    required: true,
+    defaultValue: values[0] || '',
+    options: values.map((value) => ({ value, label: getUserTypeLabel(value) })),
+    hint:
+      allowed === null
+        ? undefined
+        : `Logged in as ${getUserTypeLabel(loginType)}: only ${values
+            .map(getUserTypeLabel)
+            .join(' / ')} accounts can be created here.`,
+  };
+};
+
+/**
+ * User-creation form fields for the logged-in user type.
+ *
+ * @param {string|null|undefined} currentUserType userType of the logged-in
+ *   account (GET /auth/about-me). When it is unknown the User Type dropdown
+ *   keeps the standard option list instead of the hierarchy-restricted one.
+ */
+export const buildUserRegistrationFields = (currentUserType) => [
   {
     name: 'name',
     label: 'Full Name',
@@ -23,18 +70,7 @@ export const userRegistrationFields = [
     minLength: 10,
     placeholder: '10-digit mobile number',
   },
-  {
-    name: 'userType',
-    label: 'User Type',
-    type: 'select',
-    required: true,
-    defaultValue: 'USER',
-    options: [
-      { value: 'ADMIN', label: 'Admin' },
-      { value: 'EMPLOYEE', label: 'Employee' },
-      { value: 'USER', label: 'User' },
-    ],
-  },
+  buildUserTypeField(currentUserType),
   {
     name: 'status',
     label: 'Status',

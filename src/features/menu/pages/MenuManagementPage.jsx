@@ -56,6 +56,13 @@ function MenuManagementPage() {
     fetchSubGroups();
   }, [fetchMainGroups, fetchMenuItems, fetchSubGroups]);
 
+  useEffect(() => {
+    const tabFromUrl = searchParams.get('tab');
+    if (tabFromUrl) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [searchParams]);
+
   const tabs = [
     { key: 'mainGroups', label: 'Main Groups' },
     { key: 'menuItems', label: 'Menu Items' },

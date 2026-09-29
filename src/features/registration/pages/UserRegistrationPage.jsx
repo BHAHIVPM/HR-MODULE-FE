@@ -1,20 +1,59 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import DynamicForm from '../../../components/DynamicForm/DynamicForm';
-import { userRegistrationFields } from '../config/registrationFields';
+import { useNotification } from '../../../context/NotificationContext';
+import {
+  buildUserRegistrationFields,
+  getAllowedCreatableUserTypes,
+  getUserTypeLabel,
+  normalizeUserType,
+} from '../config/registrationFields';
 import registrationService from '../services/registrationService';
+import useCurrentUser from '../../../hooks/useCurrentUser';
 import './RegistrationPage.css';
 
 function UserRegistrationPage() {
+  const { showErrorPopup } = useNotification();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [createdUserResult, setCreatedUserResult] = useState(null);
   const [copied, setCopied] = useState(false);
 
+  // The logged-in account decides which user types may be created
+  // (DEVELOPER -> SUPERADMIN, SUPERADMIN -> ADMIN, ADMIN -> USER); see
+  // CREATABLE_USER_TYPES in registrationFields.js. The type is resolved from
+  // GET /auth/about-me; while it is unknown the standard list is used.
+  const { currentUserType } = useCurrentUser();
+  const allowedUserTypes = getAllowedCreatableUserTypes(currentUserType);
+  const loginTypeLabel = getUserTypeLabel(normalizeUserType(currentUserType));
+  const fields = useMemo(
+    () => buildUserRegistrationFields(currentUserType),
+    [currentUserType]
+  );
+
   const handleSubmit = async (data) => {
-    setLoading(true);
-    setError(null);
     setCreatedUserResult(null);
     setCopied(false);
+
+    if (!data.userType) {
+      showErrorPopup({
+        title: 'Validation Error',
+        message: 'Please select a User Type.',
+      });
+      return false;
+    }
+    // Defence in depth: the dropdown only offers the allowed types, but never
+    // trust a value that could have been tampered with in the browser.
+    if (allowedUserTypes && !allowedUserTypes.includes(data.userType)) {
+      showErrorPopup({
+        title: 'Validation Error',
+        message: `A ${loginTypeLabel} account can only create ${allowedUserTypes
+          .map(getUserTypeLabel)
+          .join(' / ')} users.`,
+      });
+      return false;
+    }
+
+    setLoading(true);
     try {
       const response = await registrationService.registerUser(data);
       // Backend returns ResponseMessage<UserCreationResponse> -> response.data.responseOutput
@@ -30,12 +69,10 @@ function UserRegistrationPage() {
           tempPassword: null,
         });
       }
+      return true;
     } catch (err) {
-      const msg =
-        err.response?.data?.message ||
-        err.message ||
-        'Registration failed. Ensure backend is running.';
-      setError(msg);
+      showErrorPopup(err);
+      return false;
     } finally {
       setLoading(false);
     }
@@ -46,6 +83,26 @@ function UserRegistrationPage() {
     setCopied(true);
     setTimeout(() => setCopied(false), 3000);
   };
+
+  // A known login type that may not create any user (e.g. EMPLOYEE or USER) is
+  // kept away from the creation form - this also covers direct URL access,
+  // since the route itself is only guarded by authentication.
+  if (allowedUserTypes !== null && allowedUserTypes.length === 0) {
+    return (
+      <div className="registration-page">
+        <div className="registration-unknown">
+          <h2>Not allowed</h2>
+          <p>
+            Your {loginTypeLabel} account is not allowed to create user accounts.
+            Please contact a Developer, SuperAdmin or Admin.
+          </p>
+          <Link className="registration-back-link" to="/dashboard">
+            Back to Dashboard
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="registration-page">
@@ -114,11 +171,10 @@ function UserRegistrationPage() {
       )}
 
       <DynamicForm
-        fields={userRegistrationFields}
+        fields={fields}
         onSubmit={handleSubmit}
         submitLabel="Register User"
         loading={loading}
-        error={error}
         title="User Registration"
         subtitle="Create a new portal login account (UserLogin model)."
       />

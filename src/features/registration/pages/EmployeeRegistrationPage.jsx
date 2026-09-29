@@ -1,27 +1,24 @@
 import { useState } from 'react';
 import DynamicForm from '../../../components/DynamicForm/DynamicForm';
+import { useNotification } from '../../../context/NotificationContext';
 import { employeeRegistrationFields } from '../config/registrationFields';
 import registrationService from '../services/registrationService';
 import './RegistrationPage.css';
 
 function EmployeeRegistrationPage() {
+  const { showSuccess, showErrorPopup } = useNotification();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
 
   const handleSubmit = async (data) => {
     setLoading(true);
-    setError(null);
-    setSuccess(null);
     try {
-      await registrationService.registerEmployee(data);
-      setSuccess('Employee registered successfully.');
+      const res = await registrationService.registerEmployee(data);
+      const msg = res?.data?.message || 'Employee registered successfully.';
+      showSuccess(msg);
+      return true;
     } catch (err) {
-      const msg =
-        err.response?.data?.message ||
-        err.message ||
-        'Registration failed. Ensure the backend dummy endpoint is running on port 8080.';
-      setError(msg);
+      showErrorPopup(err);
+      return false;
     } finally {
       setLoading(false);
     }
@@ -34,8 +31,6 @@ function EmployeeRegistrationPage() {
         onSubmit={handleSubmit}
         submitLabel="Register Employee"
         loading={loading}
-        error={error}
-        success={success}
         title="Employee Registration"
         subtitle="Add a new employee record (EmployeeMaster model)."
       />

@@ -2,16 +2,14 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useNotification } from '../../../context/NotificationContext';
 import roleService from '../services/roleService';
+import useCurrentUser from '../../../hooks/useCurrentUser';
+import { getAllowedRoleCategories } from '../../../utils/roleCategoryUtils';
 import { REGISTRATION_ROUTES } from '../../registration/config/moduleRegistrationConfig';
 import './RoleCreationPage.css';
 
-const ROLE_CATEGORIES = [
-  { value: '', label: '— None (Superadmin) —' },
-  { value: 'ADMIN', label: 'ADMIN' },
-  { value: 'USER', label: 'USER' },
-];
-
 function RoleCreationPage() {
+  const { currentUserType } = useCurrentUser();
+  const allowedCategories = getAllowedRoleCategories(currentUserType);
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
@@ -182,7 +180,10 @@ function RoleCreationPage() {
                   <label htmlFor="rcat">Role Category</label>
                   <select id="rcat" value={formData.roleCategory}
                     onChange={(e) => setFormData({ ...formData, roleCategory: e.target.value })}>
-                    {ROLE_CATEGORIES.map((cat) => (<option key={cat.value} value={cat.value}>{cat.label}</option>))}
+                    <option value="">— None (Superadmin) —</option>
+                    {allowedCategories.map((cat) => (
+                      <option key={cat.value} value={cat.value}>{cat.label}</option>
+                    ))}
                   </select>
                 </div>
                 <div className="ra-form-group ra-checkbox-group">
