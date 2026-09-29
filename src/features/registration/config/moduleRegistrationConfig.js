@@ -15,6 +15,7 @@ import performanceReviewService from '../../performance/services/performanceRevi
 import roleService from '../../role-assignment/services/roleService';
 import employeeShiftService from '../../shift/services/employeeShiftService';
 import shiftService from '../../shift/services/shiftService';
+import { DEFAULT_ROLE_CATEGORIES } from '../../../utils/roleCategoryUtils';
 
 /** Today's date in the yyyy-MM-dd format used by the date inputs. */
 const today = () => new Date().toISOString().split('T')[0];
@@ -922,10 +923,7 @@ export const MODULE_REGISTRATIONS = {
         label: 'Role Category',
         type: 'select',
         placeholder: '— None (Superadmin) —',
-        options: [
-          { value: 'ADMIN', label: 'ADMIN' },
-          { value: 'USER', label: 'USER' },
-        ],
+        options: DEFAULT_ROLE_CATEGORIES,
       },
       { name: 'remarks', label: 'Remarks', type: 'textarea', rows: 3, colSpan: 2, maxLength: 500 },
       {
@@ -1167,6 +1165,9 @@ export const MODULE_ADD_PATHS = {
   '/performance-reviews': REGISTRATION_ROUTES['performance-review'],
   '/role-assignment': REGISTRATION_ROUTES.role,
   '/menu-management': REGISTRATION_ROUTES['main-group'],
+  '/menu-management?tab=mainGroups': REGISTRATION_ROUTES['main-group'],
+  '/menu-management?tab=subGroups': REGISTRATION_ROUTES['sub-group'],
+  '/menu-management?tab=menuItems': REGISTRATION_ROUTES['menu-item'],
 };
 
 const normalizePath = (path) => {
@@ -1182,7 +1183,12 @@ const NORMALIZED_ADD_PATHS = Object.entries(MODULE_ADD_PATHS).reduce((acc, [path
 }, {});
 
 /** Resolves the registration screen route for a module list route (or null). */
-export const resolveAddPath = (path) => NORMALIZED_ADD_PATHS[normalizePath(path)] || null;
+export const resolveAddPath = (path) => {
+  if (!path) return null;
+  const raw = String(path).trim();
+  if (MODULE_ADD_PATHS[raw]) return MODULE_ADD_PATHS[raw];
+  return NORMALIZED_ADD_PATHS[normalizePath(path)] || null;
+};
 
 /** Returns a module list route including its tab query parameter. */
 export const getRegistrationListPath = (config) => {

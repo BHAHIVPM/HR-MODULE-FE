@@ -16,12 +16,14 @@ function EmployeeRegistrationPage() {
     try {
       await registrationService.registerEmployee(data);
       setSuccess('Employee registered successfully.');
+      return true;
     } catch (err) {
       const msg =
         err.response?.data?.message ||
         err.message ||
         'Registration failed. Ensure the backend dummy endpoint is running on port 8080.';
       setError(msg);
+      return false;
     } finally {
       setLoading(false);
     }
