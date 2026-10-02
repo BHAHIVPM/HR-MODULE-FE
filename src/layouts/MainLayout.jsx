@@ -497,6 +497,7 @@ function getPageTitle(pathname) {
   if (pathname === '/documents') return 'Document Repository';
   if (pathname === '/performance-reviews') return 'Performance Reviews & Appraisals';
   if (pathname === '/userData') return 'User Data Directory';
+  if (pathname === '/role-assignment') return 'Role Management';
   if (pathname === '/clients') return 'Client Directory';
   if (pathname === '/registrations/user') return 'User Registration';
   if (pathname === '/registrations/employee') return 'Employee Registration';
