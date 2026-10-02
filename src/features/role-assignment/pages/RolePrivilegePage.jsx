@@ -69,7 +69,7 @@ function RolePrivilegePage() {
     <div className="ra-container">
       <div className="ra-header">
         <div className="ra-title-group">
-          <h1>🔐 Role Privilege Assignment</h1>
+          <h1>🔐 Role Menu Assignment</h1>
           <p>Assign menu privileges (view, add, edit, delete) to a specific role</p>
         </div>
       </div>

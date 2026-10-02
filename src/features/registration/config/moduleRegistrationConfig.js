@@ -1164,6 +1164,7 @@ export const MODULE_ADD_PATHS = {
   '/documents': REGISTRATION_ROUTES.document,
   '/performance-reviews': REGISTRATION_ROUTES['performance-review'],
   '/role-assignment': REGISTRATION_ROUTES.role,
+  '/role-assignment?tab=role-creation': REGISTRATION_ROUTES.role,
   '/menu-management': REGISTRATION_ROUTES['main-group'],
   '/menu-management?tab=mainGroups': REGISTRATION_ROUTES['main-group'],
   '/menu-management?tab=subGroups': REGISTRATION_ROUTES['sub-group'],
