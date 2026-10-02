@@ -90,7 +90,7 @@ const NAV_ITEMS = [
     icon: UserDataIcon,
   },
   {
-    label: 'Role Management',
+    label: 'Role Assignment',
     listPath: '/role-assignment',
     formPath: '/registrations/role',
     icon: RoleAssignmentIcon,
@@ -109,14 +109,17 @@ const NAV_ITEMS = [
 // The first user in the system is a seeded DEVELOPER account. Nobody can assign
 // role privileges to it yet (role assignment itself requires a user who already
 // has privileges), so the modules needed to bootstrap the system - User
-// Management, Role Management (Role Creation, Role Menu Assignment, User Role Assignment)
-// and Menu Management - MUST always be reachable for developer accounts.
-// Every other user type relies purely on the menu-management / privilege configuration
-// returned by the backend.
+// Management (create users and assign their user type, e.g. SUPERADMIN), Role
+// Assignment (holds the Role Privileges tab) and Menu Management (defines what
+// every menu contains) - MUST always be reachable for developer accounts,
+// otherwise the bootstrap user is locked out of the very screens needed to
+// grant itself access. Every other user type relies purely on the
+// menu-management / privilege configuration returned by the backend.
 const MANDATORY_DEVELOPER_MENUS = [
   {
     mainGroupId: 'dev-mandatory-user-management',
     mainGroupName: 'User Management',
+    // iconPath intentionally omitted -> sidebar renders the default menu icon
     subGroup: [
       {
         subGroupId: 'dev-mandatory-user-management-group',
@@ -127,6 +130,9 @@ const MANDATORY_DEVELOPER_MENUS = [
             menuName: 'User Management',
             componentPath: '/userData',
             canView: true,
+            // canAdd true so the sidebar's "+ Add" button (which routes to
+            // /registrations/user) is shown, letting the developer create new
+            // users and assign their user type / role from there.
             canAdd: true,
           },
         ],
@@ -135,37 +141,17 @@ const MANDATORY_DEVELOPER_MENUS = [
   },
   {
     mainGroupId: 'dev-mandatory-role-assignment',
-    mainGroupName: 'Role Management',
+    mainGroupName: 'Role Assignment',
+    // iconPath intentionally omitted -> sidebar renders the default menu icon
     subGroup: [
       {
         subGroupId: 'dev-mandatory-role-assignment-group',
         subGroupName: null,
         subItems: [
           {
-            menuNameId: 'dev-mandatory-role-creation-item',
-            menuName: 'Role Creation',
-            componentPath: '/role-assignment?tab=role-creation',
-            canView: true,
-            canAdd: true,
-          },
-          {
-            menuNameId: 'dev-mandatory-role-privileges-item',
-            menuName: 'Role Menu Assignment',
-            componentPath: '/role-assignment?tab=role-privileges',
-            canView: true,
-            canAdd: false,
-          },
-          {
-            menuNameId: 'dev-mandatory-user-role-assignment-item',
-            menuName: 'User Role Assignment',
-            componentPath: '/role-assignment?tab=user-role-assignment',
-            canView: true,
-            canAdd: false,
-          },
-          {
-            menuNameId: 'dev-mandatory-user-level-privileges-item',
-            menuName: 'User Level Privileges',
-            componentPath: '/role-assignment?tab=user-level-privileges',
+            menuNameId: 'dev-mandatory-role-assignment-item',
+            menuName: 'Role Assignment',
+            componentPath: '/role-assignment',
             canView: true,
             canAdd: false,
           },
@@ -215,53 +201,36 @@ const MANDATORY_DEVELOPER_MENUS = [
   },
 ];
 
-// True when `menu` already contains a VISIBLE item matching `componentPath`.
+// True when `menu` already contains a VISIBLE item pointing at `componentPath`.
 function menuHasVisibleItem(menu, componentPath) {
-  if (!componentPath) return false;
+  const normTarget = componentPath ? componentPath.split('?')[0] : '';
   return (Array.isArray(menu) ? menu : []).some((mainGroup) =>
     (Array.isArray(mainGroup?.subGroup) ? mainGroup.subGroup : []).some((subGroup) =>
       (Array.isArray(subGroup?.subItems) ? subGroup.subItems : []).some((item) => {
         if (!item?.componentPath || item?.canView === false) return false;
-        return item.componentPath === componentPath;
+        const normItem = item.componentPath.split('?')[0];
+        return normItem === normTarget;
       })
     )
   );
 }
 
 // Returns the menu with every mandatory developer entry the backend did not
-// already expose (or exposed as hidden/incomplete) appended or merged.
+// already expose (or exposed as hidden) appended, so the entry is never lost.
+// Duplicate-free by design: the synthetic entry is only added when no visible
+// counterpart exists, and renderBackendNav hides items with canView === false.
 function ensureMandatoryDeveloperMenus(menu) {
   const base = Array.isArray(menu) ? menu : [];
-  let result = [...base];
-
-  MANDATORY_DEVELOPER_MENUS.forEach((mandatory) => {
-    const mandatorySubItems = mandatory.subGroup[0]?.subItems || [];
-    const hasAllItems = mandatorySubItems.every((mItem) =>
-      menuHasVisibleItem(result, mItem.componentPath)
-    );
-
-    if (!hasAllItems) {
-      const existingMgIndex = result.findIndex(
-        (mg) =>
-          mg.mainGroupId === mandatory.mainGroupId ||
-          mg.mainGroupName === mandatory.mainGroupName ||
-          (mandatory.mainGroupName === 'Role Management' && mg.mainGroupName === 'Role Assignment')
-      );
-
-      if (existingMgIndex >= 0) {
-        result[existingMgIndex] = mandatory;
-      } else {
-        result.push(mandatory);
-      }
-    }
+  const missing = MANDATORY_DEVELOPER_MENUS.filter((mandatory) => {
+    const items = mandatory.subGroup[0]?.subItems || [];
+    return !items.some((item) => menuHasVisibleItem(base, item.componentPath));
   });
-
-  return result;
+  return missing.length > 0 ? [...base, ...missing] : base;
 }
 
 // Static navigation fallback: used only when the backend menu could not be loaded,
 // so the app stays navigable during network/server failures.
-function renderStaticNav(location, navigate, isCollapsed, handleMenuClick) {
+function renderStaticNav(location, navigate, isCollapsed) {
   return NAV_ITEMS.map((item) => {
     const isListActive = location.pathname === item.listPath;
     const isFormActive = item.formPath && location.pathname === item.formPath;
@@ -271,17 +240,13 @@ function renderStaticNav(location, navigate, isCollapsed, handleMenuClick) {
       <div
         key={item.label}
         className={`sidebar-menu-row ${isRowActive ? 'sidebar-menu-row-active' : ''}`}
-        onClick={() => {
-          navigate(item.listPath);
-          handleMenuClick();
-        }}
+        onClick={() => navigate(item.listPath)}
         role="button"
         tabIndex={0}
         data-tooltip={item.label}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             navigate(item.listPath);
-            handleMenuClick();
           }
         }}
       >
@@ -298,7 +263,6 @@ function renderStaticNav(location, navigate, isCollapsed, handleMenuClick) {
             onClick={(e) => {
               e.stopPropagation();
               navigate(item.formPath);
-              handleMenuClick();
             }}
             aria-label={`Add ${item.label}`}
           >
@@ -313,7 +277,7 @@ function renderStaticNav(location, navigate, isCollapsed, handleMenuClick) {
 // Backend-driven navigation built from GET /api/main-group-operation/full.
 // Menu names come straight from the backend response (English master data);
 // entries with canView === false are hidden.
-function renderBackendNav(menu, location, isCollapsed, expandedGroups, toggleGroup, handleMenuClick) {
+function renderBackendNav(menu, location, isCollapsed, expandedGroups, toggleGroup) {
   return menu.map((mainGroup) => {
     const mgKey = String(mainGroup.mainGroupId ?? mainGroup.mainGroupName);
     const subGroups = Array.isArray(mainGroup.subGroup) ? mainGroup.subGroup : [];
@@ -388,11 +352,6 @@ function renderBackendNav(menu, location, isCollapsed, expandedGroups, toggleGro
                         <Link
                           to={item.componentPath || '#'}
                           className={`sidebar-sublink ${isActive ? 'sidebar-sublink-active' : ''}`}
-                          onClick={() => {
-                            if (item.componentPath) {
-                              handleMenuClick();
-                            }
-                          }}
                         >
                           {item.menuName}
                         </Link>
@@ -402,10 +361,7 @@ function renderBackendNav(menu, location, isCollapsed, expandedGroups, toggleGro
                             className={`sidebar-add-btn sidebar-add-btn-sm ${isAddActive ? 'sidebar-add-btn-active' : ''}`}
                             title={`Register / Add ${item.menuName}`}
                             aria-label={`Add ${item.menuName}`}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleMenuClick();
-                            }}
+                            onClick={(e) => e.stopPropagation()}
                           >
                             +
                           </Link>
@@ -443,29 +399,6 @@ function MainLayout() {
     return window.innerWidth <= 1024;
   });
 
-  const [isHovered, setIsHovered] = useState(false);
-  const [suppressHover, setSuppressHover] = useState(false);
-
-  const handleMouseEnter = useCallback(() => {
-    if (!suppressHover) {
-      setIsHovered(true);
-    }
-  }, [suppressHover]);
-
-  const handleMouseLeave = useCallback(() => {
-    setIsHovered(false);
-    setSuppressHover(false);
-  }, []);
-
-  const handleMenuClick = useCallback(() => {
-    setIsCollapsed(true);
-    localStorage.setItem('hr_sidebar_collapsed', JSON.stringify(true));
-    setIsHovered(false);
-    setSuppressHover(true);
-  }, []);
-
-  const effectiveIsCollapsed = isCollapsed && (!isHovered || suppressHover);
-
   const toggleSidebar = () => {
     setIsCollapsed((prev) => {
       const next = !prev;
@@ -501,9 +434,9 @@ function MainLayout() {
     // Server failure: static fallback keeps the app navigable (it already
     // contains the User Management, Role Assignment and Menu Management
     // entries, so developers are covered here too).
-    navContent = renderStaticNav(location, navigate, effectiveIsCollapsed, handleMenuClick);
+    navContent = renderStaticNav(location, navigate, isCollapsed);
   } else if (Array.isArray(effectiveMenu) && effectiveMenu.length > 0) {
-    navContent = renderBackendNav(effectiveMenu, location, effectiveIsCollapsed, expandedGroups, toggleGroup, handleMenuClick);
+    navContent = renderBackendNav(effectiveMenu, location, isCollapsed, expandedGroups, toggleGroup);
   } else if (Array.isArray(menu)) {
     // Backend answered but the account has no menus assigned.
     navContent = (
@@ -515,18 +448,14 @@ function MainLayout() {
 
   return (
     <div className="main-layout">
-      <aside
-        className={`main-layout-sidebar ${effectiveIsCollapsed ? 'is-collapsed' : ''}`}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-      >
+      <aside className={`main-layout-sidebar ${isCollapsed ? 'is-collapsed' : ''}`}>
         <div className="sidebar-brand">
           <button
             type="button"
-            className={`sidebar-mark ${effectiveIsCollapsed ? 'sidebar-mark-collapsed' : ''}`}
+            className={`sidebar-mark ${isCollapsed ? 'sidebar-mark-collapsed' : ''}`}
             onClick={toggleSidebar}
-            title={effectiveIsCollapsed ? "Expand menu" : "Collapse menu"}
-            aria-label={effectiveIsCollapsed ? "Expand menu" : "Collapse menu"}
+            title={isCollapsed ? "Expand menu" : "Collapse menu"}
+            aria-label={isCollapsed ? "Expand menu" : "Collapse menu"}
           >
             <svg viewBox="0 0 32 32" width="20" height="20" fill="none" className="hexagon-icon">
               <path d="M16 2 L29 9 V23 L16 30 L3 23 V9 Z" stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round" />

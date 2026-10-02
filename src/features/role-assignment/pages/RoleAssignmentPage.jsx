@@ -8,21 +8,14 @@ import './RoleAssignmentPage.css';
 
 const TABS = [
   { key: 'role-creation', label: 'Role Creation', icon: '📋' },
-  { key: 'role-privileges', label: 'Role Menu Assignment', icon: '🔐' },
+  { key: 'role-privileges', label: 'Role Privileges', icon: '🔐' },
   { key: 'user-role-assignment', label: 'User Role Assignment', icon: '👥' },
   { key: 'user-level-privileges', label: 'User Level Privileges', icon: '🛡️' },
 ];
 
 function RoleAssignmentPage() {
   const [searchParams] = useSearchParams();
-  const tabFromUrl = searchParams.get('tab');
-  const [activeTab, setActiveTab] = useState(tabFromUrl || 'role-creation');
-
-  React.useEffect(() => {
-    if (tabFromUrl) {
-      setActiveTab(tabFromUrl);
-    }
-  }, [tabFromUrl]);
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'role-creation');
 
   const renderContent = () => {
     switch (activeTab) {
