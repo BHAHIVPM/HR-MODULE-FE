@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import performanceReviewService from '../services/performanceReviewService';
+import { REGISTRATION_ROUTES } from '../../registration/config/moduleRegistrationConfig';
 import { useNotification } from '../../../context/NotificationContext';
 import './PerformanceReviewPage.css';
 
 function PerformanceReviewPage() {
   const { showSuccess, showErrorPopup } = useNotification();
+  const navigate = useNavigate();
 
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -53,10 +56,10 @@ function PerformanceReviewPage() {
 
       if (selectedReview) {
         const res = await performanceReviewService.update(selectedReview.reviewId, payload);
-        showSuccess(res?.data?.message || 'Appraisal record updated.');
+        showSuccess(res?.data?.message || 'Appraisal record updated.', res?.data?.header || 'Success');
       } else {
         const res = await performanceReviewService.save(payload);
-        showSuccess(res?.data?.message || 'Appraisal cycle initiated.');
+        showSuccess(res?.data?.message || 'Appraisal cycle initiated.', res?.data?.header || 'Success');
       }
       setShowModal(false);
       loadReviews();
@@ -68,22 +71,41 @@ function PerformanceReviewPage() {
   const handleSubmitReview = async (reviewId) => {
     try {
       const res = await performanceReviewService.submit(reviewId);
-      showSuccess(res?.data?.message || 'Appraisal submitted for manager review.');
+      showSuccess(res?.data?.message || 'Appraisal submitted for manager review.', res?.data?.header || 'Success');
       loadReviews();
     } catch (err) {
       showErrorPopup(err);
     }
   };
 
-  const handleCompleteReview = async (reviewId) => {
-    const ratingStr = window.prompt('Enter overall rating (1.0 - 5.0):', '4.5');
-    if (!ratingStr) return;
-    const rating = parseFloat(ratingStr);
-    const comments = window.prompt('Enter reviewer comments (optional):', 'Exceeds expectations.');
+  const [completeModal, setCompleteModal] = useState({
+    show: false,
+    reviewId: null,
+    rating: '4.5',
+    comments: 'Exceeds expectations.',
+  });
+
+  const openCompleteModal = (reviewId) => {
+    setCompleteModal({
+      show: true,
+      reviewId,
+      rating: '4.5',
+      comments: 'Exceeds expectations.',
+    });
+  };
+
+  const handleCompleteSubmit = async (e) => {
+    e.preventDefault();
+    const ratingNum = parseFloat(completeModal.rating);
+    if (isNaN(ratingNum) || ratingNum < 1.0 || ratingNum > 5.0) {
+      showErrorPopup({ title: 'Validation Error', message: 'Rating must be a number between 1.0 and 5.0' });
+      return;
+    }
 
     try {
-      const res = await performanceReviewService.completeReview(reviewId, rating, comments);
-      showSuccess(res?.data?.message || 'Appraisal review completed!');
+      const res = await performanceReviewService.completeReview(completeModal.reviewId, ratingNum, completeModal.comments);
+      showSuccess(res?.data?.message || 'Appraisal review completed!', res?.data?.header || 'Success');
+      setCompleteModal((prev) => ({ ...prev, show: false }));
       loadReviews();
     } catch (err) {
       showErrorPopup(err);
@@ -93,7 +115,7 @@ function PerformanceReviewPage() {
   const handleAcknowledge = async (reviewId) => {
     try {
       const res = await performanceReviewService.acknowledge(reviewId);
-      showSuccess(res?.data?.message || 'Appraisal acknowledged by employee.');
+      showSuccess(res?.data?.message || 'Appraisal acknowledged by employee.', res?.data?.header || 'Success');
       loadReviews();
     } catch (err) {
       showErrorPopup(err);
@@ -104,7 +126,7 @@ function PerformanceReviewPage() {
     if (!window.confirm(`Delete performance review record #${id}?`)) return;
     try {
       const res = await performanceReviewService.delete(id);
-      showSuccess(res?.data?.message || 'Appraisal record deleted.');
+      showSuccess(res?.data?.message || 'Appraisal record deleted.', res?.data?.header || 'Success');
       loadReviews();
     } catch (err) {
       showErrorPopup(err);
@@ -123,22 +145,7 @@ function PerformanceReviewPage() {
         <h1>Performance Reviews & Appraisals</h1>
         <button
           className="btn-primary-action"
-          onClick={() => {
-            setSelectedReview(null);
-            setFormData({
-              employeeId: '',
-              reviewerId: '',
-              reviewCycle: '2026-H1',
-              reviewPeriodStart: `${new Date().getFullYear()}-01-01`,
-              reviewPeriodEnd: `${new Date().getFullYear()}-06-30`,
-              achievements: '',
-              strengths: '',
-              areasOfImprovement: '',
-              goalsForNextCycle: '',
-              status: 'DRAFT',
-            });
-            setShowModal(true);
-          }}
+          onClick={() => navigate(REGISTRATION_ROUTES['performance-review'])}
         >
           + Initiate Performance Review
         </button>
@@ -174,7 +181,7 @@ function PerformanceReviewPage() {
             <tbody>
               {filteredReviews.length === 0 ? (
                 <tr>
-                  <td colSpan="8" style={{ textCenter: 'center', padding: '24px' }}>
+                  <td colSpan="8" style={{ textAlign: 'center', padding: '24px' }}>
                     No appraisal records found.
                   </td>
                 </tr>
@@ -206,7 +213,7 @@ function PerformanceReviewPage() {
                           <button className="btn-approve" onClick={() => handleSubmitReview(r.reviewId)}>Submit</button>
                         )}
                         {r.status === 'SUBMITTED' && (
-                          <button className="btn-issue" onClick={() => handleCompleteReview(r.reviewId)}>Review</button>
+                          <button className="btn-issue" onClick={() => openCompleteModal(r.reviewId)}>Review</button>
                         )}
                         {r.status === 'REVIEWED' && (
                           <button className="btn-mark-paid" onClick={() => handleAcknowledge(r.reviewId)}>Acknowledge</button>
@@ -343,6 +350,49 @@ function PerformanceReviewPage() {
               <div className="form-actions">
                 <button type="button" className="btn-secondary" onClick={() => setShowModal(false)}>Cancel</button>
                 <button type="submit" className="btn-primary-action">Save Appraisal</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Complete Review Modal */}
+      {completeModal.show && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h2>Complete Appraisal Review #{completeModal.reviewId}</h2>
+              <button className="close-btn" onClick={() => setCompleteModal((prev) => ({ ...prev, show: false }))}>&times;</button>
+            </div>
+            <form onSubmit={handleCompleteSubmit}>
+              <div className="form-group">
+                <label>Overall Rating (1.0 - 5.0) *</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  min="1.0"
+                  max="5.0"
+                  required
+                  value={completeModal.rating}
+                  onChange={(e) => setCompleteModal((prev) => ({ ...prev, rating: e.target.value }))}
+                />
+              </div>
+              <div className="form-group">
+                <label>Reviewer Comments</label>
+                <textarea
+                  rows="3"
+                  value={completeModal.comments}
+                  onChange={(e) => setCompleteModal((prev) => ({ ...prev, comments: e.target.value }))}
+                  placeholder="Enter appraisal review comments..."
+                />
+              </div>
+              <div className="form-actions">
+                <button type="button" className="btn-secondary" onClick={() => setCompleteModal((prev) => ({ ...prev, show: false }))}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn-primary-action">
+                  Complete Review
+                </button>
               </div>
             </form>
           </div>

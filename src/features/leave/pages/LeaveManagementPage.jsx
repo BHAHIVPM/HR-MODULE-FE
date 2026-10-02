@@ -1,12 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import leaveMasterService from '../services/leaveMasterService';
 import leaveApplicationService from '../services/leaveApplicationService';
+import { REGISTRATION_ROUTES } from '../../registration/config/moduleRegistrationConfig';
 import { useNotification } from '../../../context/NotificationContext';
 import './LeaveManagementPage.css';
 
 function LeaveManagementPage() {
   const { showSuccess, showErrorPopup } = useNotification();
-  const [activeTab, setActiveTab] = useState('applications'); // 'applications' | 'types'
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'applications'); // 'applications' | 'types'
 
   const [leaveTypes, setLeaveTypes] = useState([]);
   const [applications, setApplications] = useState([]);
@@ -80,7 +84,7 @@ function LeaveManagementPage() {
         noOfDays: parseFloat(applyForm.noOfDays),
       };
       const res = await leaveApplicationService.apply(payload);
-      showSuccess(res?.data?.message || 'Leave application submitted successfully.');
+      showSuccess(res?.data?.message || 'Leave application submitted successfully.', res?.data?.header || 'Success');
       setShowApplyModal(false);
       fetchApplications();
     } catch (err) {
@@ -100,10 +104,10 @@ function LeaveManagementPage() {
 
       if (selectedType) {
         const res = await leaveMasterService.update(selectedType.leaveTypeId, payload);
-        showSuccess(res?.data?.message || 'Leave type updated.');
+        showSuccess(res?.data?.message || 'Leave type updated.', res?.data?.header || 'Success');
       } else {
         const res = await leaveMasterService.save(payload);
-        showSuccess(res?.data?.message || 'New leave type created.');
+        showSuccess(res?.data?.message || 'New leave type created.', res?.data?.header || 'Success');
       }
       setShowTypeModal(false);
       fetchLeaveTypes();
@@ -112,28 +116,53 @@ function LeaveManagementPage() {
     }
   };
 
-  // Manager Approve Action
-  const handleApprove = async (id) => {
-    const approverIdStr = window.prompt('Enter Approver Employee ID:', '1');
-    if (!approverIdStr) return;
-    const remarks = window.prompt('Enter approval remarks (optional):', 'Approved');
-    try {
-      const res = await leaveApplicationService.approve(id, parseInt(approverIdStr, 10), remarks);
-      showSuccess(res?.data?.message || 'Leave application approved!');
-      fetchApplications();
-    } catch (err) {
-      showErrorPopup(err);
-    }
+  // Approval / Rejection Action Modal state
+  const [actionModal, setActionModal] = useState({
+    show: false,
+    type: 'APPROVE', // 'APPROVE' | 'REJECT'
+    applicationId: null,
+    approverId: '1',
+    remarks: '',
+  });
+
+  const openApproveModal = (id) => {
+    setActionModal({
+      show: true,
+      type: 'APPROVE',
+      applicationId: id,
+      approverId: '1',
+      remarks: 'Approved',
+    });
   };
 
-  // Manager Reject Action
-  const handleReject = async (id) => {
-    const approverIdStr = window.prompt('Enter Approver Employee ID:', '1');
-    if (!approverIdStr) return;
-    const remarks = window.prompt('Enter rejection remarks (optional):', 'Rejected');
+  const openRejectModal = (id) => {
+    setActionModal({
+      show: true,
+      type: 'REJECT',
+      applicationId: id,
+      approverId: '1',
+      remarks: 'Rejected',
+    });
+  };
+
+  const handleActionSubmit = async (e) => {
+    e.preventDefault();
+    const { type, applicationId, approverId, remarks } = actionModal;
+    const approverNum = parseInt(approverId, 10);
+    if (isNaN(approverNum) || approverNum <= 0) {
+      showErrorPopup({ title: 'Validation Error', message: 'Please enter a valid numeric Approver ID.' });
+      return;
+    }
+
     try {
-      const res = await leaveApplicationService.reject(id, parseInt(approverIdStr, 10), remarks);
-      showSuccess(res?.data?.message || 'Leave application rejected.');
+      if (type === 'APPROVE') {
+        const res = await leaveApplicationService.approve(applicationId, approverNum, remarks);
+        showSuccess(res?.data?.message || 'Leave application approved!', res?.data?.header || 'Success');
+      } else {
+        const res = await leaveApplicationService.reject(applicationId, approverNum, remarks);
+        showSuccess(res?.data?.message || 'Leave application rejected.', res?.data?.header || 'Success');
+      }
+      setActionModal((prev) => ({ ...prev, show: false }));
       fetchApplications();
     } catch (err) {
       showErrorPopup(err);
@@ -145,7 +174,7 @@ function LeaveManagementPage() {
     if (!window.confirm(`Cancel leave application #${id}?`)) return;
     try {
       const res = await leaveApplicationService.cancel(id);
-      showSuccess(res?.data?.message || 'Leave application cancelled.');
+      showSuccess(res?.data?.message || 'Leave application cancelled.', res?.data?.header || 'Success');
       fetchApplications();
     } catch (err) {
       showErrorPopup(err);
@@ -157,7 +186,7 @@ function LeaveManagementPage() {
     if (!window.confirm(`Delete leave type ${name}?`)) return;
     try {
       const res = await leaveMasterService.delete(id);
-      showSuccess(res?.data?.message || 'Leave type deleted.');
+      showSuccess(res?.data?.message || 'Leave type deleted.', res?.data?.header || 'Success');
       fetchLeaveTypes();
     } catch (err) {
       showErrorPopup(err);
@@ -208,18 +237,7 @@ function LeaveManagementPage() {
             </div>
             <button
               className="btn-primary-action"
-              onClick={() => {
-                setApplyForm({
-                  employeeId: '',
-                  leaveTypeId: leaveTypes[0]?.leaveTypeId || '',
-                  fromDate: new Date().toISOString().split('T')[0],
-                  toDate: new Date().toISOString().split('T')[0],
-                  noOfDays: 1,
-                  reason: '',
-                  status: 'PENDING',
-                });
-                setShowApplyModal(true);
-              }}
+              onClick={() => navigate(REGISTRATION_ROUTES['leave-application'])}
             >
               + Apply For Leave
             </button>
@@ -227,18 +245,7 @@ function LeaveManagementPage() {
         ) : (
           <button
             className="btn-primary-action"
-            onClick={() => {
-              setSelectedType(null);
-              setTypeForm({
-                leaveTypeCode: '',
-                leaveTypeName: '',
-                defaultDaysPerYear: 12,
-                carryForwardAllowed: false,
-                maxCarryForwardDays: 0,
-                status: 'ACTIVE',
-              });
-              setShowTypeModal(true);
-            }}
+            onClick={() => navigate(REGISTRATION_ROUTES['leave-type'])}
           >
             + Create Leave Type
           </button>
@@ -267,7 +274,7 @@ function LeaveManagementPage() {
             <tbody>
               {filteredApps.length === 0 ? (
                 <tr>
-                  <td colSpan="10" style={{ textCenter: 'center', padding: '24px' }}>
+                  <td colSpan="10" style={{ textAlign: 'center', padding: '24px' }}>
                     No leave applications found.
                   </td>
                 </tr>
@@ -291,8 +298,8 @@ function LeaveManagementPage() {
                       <div className="action-btns">
                         {app.status === 'PENDING' && (
                           <>
-                            <button className="btn-approve" onClick={() => handleApprove(app.leaveApplicationId)}>Approve</button>
-                            <button className="btn-reject" onClick={() => handleReject(app.leaveApplicationId)}>Reject</button>
+                            <button className="btn-approve" onClick={() => openApproveModal(app.leaveApplicationId)}>Approve</button>
+                            <button className="btn-reject" onClick={() => openRejectModal(app.leaveApplicationId)}>Reject</button>
                           </>
                         )}
                         {(app.status === 'PENDING' || app.status === 'APPROVED') && (
@@ -323,7 +330,7 @@ function LeaveManagementPage() {
             <tbody>
               {leaveTypes.length === 0 ? (
                 <tr>
-                  <td colSpan="7" style={{ textCenter: 'center', padding: '24px' }}>
+                  <td colSpan="7" style={{ textAlign: 'center', padding: '24px' }}>
                     No leave types configured.
                   </td>
                 </tr>
@@ -362,6 +369,47 @@ function LeaveManagementPage() {
               )}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Approve / Reject Modal */}
+      {actionModal.show && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h2>{actionModal.type === 'APPROVE' ? 'Approve Leave Application' : 'Reject Leave Application'} #{actionModal.applicationId}</h2>
+              <button className="close-btn" onClick={() => setActionModal((prev) => ({ ...prev, show: false }))}>&times;</button>
+            </div>
+            <form onSubmit={handleActionSubmit}>
+              <div className="form-group">
+                <label>Approver Employee ID *</label>
+                <input
+                  type="number"
+                  required
+                  min="1"
+                  value={actionModal.approverId}
+                  onChange={(e) => setActionModal((prev) => ({ ...prev, approverId: e.target.value }))}
+                />
+              </div>
+              <div className="form-group">
+                <label>Remarks</label>
+                <textarea
+                  rows="3"
+                  value={actionModal.remarks}
+                  onChange={(e) => setActionModal((prev) => ({ ...prev, remarks: e.target.value }))}
+                  placeholder="Enter optional remarks..."
+                />
+              </div>
+              <div className="form-actions">
+                <button type="button" className="btn-secondary" onClick={() => setActionModal((prev) => ({ ...prev, show: false }))}>
+                  Cancel
+                </button>
+                <button type="submit" className={actionModal.type === 'APPROVE' ? 'btn-approve' : 'btn-reject'}>
+                  {actionModal.type === 'APPROVE' ? 'Approve Application' : 'Reject Application'}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 

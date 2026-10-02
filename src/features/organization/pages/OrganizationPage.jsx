@@ -1,12 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import departmentService from '../services/departmentService';
 import designationService from '../services/designationService';
+import { REGISTRATION_ROUTES } from '../../registration/config/moduleRegistrationConfig';
 import { useNotification } from '../../../context/NotificationContext';
 import './OrganizationPage.css';
 
 function OrganizationPage() {
   const { showSuccess, showErrorPopup } = useNotification();
-  const [activeTab, setActiveTab] = useState('departments'); // 'departments' | 'designations'
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'departments'); // 'departments' | 'designations'
   
   const [departments, setDepartments] = useState([]);
   const [designations, setDesignations] = useState([]);
@@ -76,10 +80,10 @@ function OrganizationPage() {
 
       if (selectedDept) {
         const res = await departmentService.update(selectedDept.departmentId, payload);
-        showSuccess(res?.data?.message || 'Department updated successfully.');
+        showSuccess(res?.data?.message || 'Department updated successfully.', res?.data?.header || 'Success');
       } else {
         const res = await departmentService.save(payload);
-        showSuccess(res?.data?.message || 'Department created successfully.');
+        showSuccess(res?.data?.message || 'Department created successfully.', res?.data?.header || 'Success');
       }
       setShowDeptModal(false);
       fetchDepartments();
@@ -99,10 +103,10 @@ function OrganizationPage() {
 
       if (selectedDesig) {
         const res = await designationService.update(selectedDesig.designationId, payload);
-        showSuccess(res?.data?.message || 'Designation updated successfully.');
+        showSuccess(res?.data?.message || 'Designation updated successfully.', res?.data?.header || 'Success');
       } else {
         const res = await designationService.save(payload);
-        showSuccess(res?.data?.message || 'Designation created successfully.');
+        showSuccess(res?.data?.message || 'Designation created successfully.', res?.data?.header || 'Success');
       }
       setShowDesigModal(false);
       fetchDesignations();
@@ -127,7 +131,7 @@ function OrganizationPage() {
     if (!window.confirm(`Delete department ${name}?`)) return;
     try {
       const res = await departmentService.delete(id);
-      showSuccess(res?.data?.message || 'Department deleted.');
+      showSuccess(res?.data?.message || 'Department deleted.', res?.data?.header || 'Success');
       fetchDepartments();
     } catch (err) {
       showErrorPopup(err);
@@ -150,7 +154,7 @@ function OrganizationPage() {
     if (!window.confirm(`Delete designation ${name}?`)) return;
     try {
       const res = await designationService.delete(id);
-      showSuccess(res?.data?.message || 'Designation deleted.');
+      showSuccess(res?.data?.message || 'Designation deleted.', res?.data?.header || 'Success');
       fetchDesignations();
     } catch (err) {
       showErrorPopup(err);
@@ -201,34 +205,14 @@ function OrganizationPage() {
         {activeTab === 'departments' ? (
           <button
             className="btn-primary-action"
-            onClick={() => {
-              setSelectedDept(null);
-              setDeptForm({
-                departmentCode: '',
-                departmentName: '',
-                departmentHeadId: '',
-                description: '',
-                status: 'ACTIVE',
-              });
-              setShowDeptModal(true);
-            }}
+            onClick={() => navigate(REGISTRATION_ROUTES.department)}
           >
             + Add Department
           </button>
         ) : (
           <button
             className="btn-primary-action"
-            onClick={() => {
-              setSelectedDesig(null);
-              setDesigForm({
-                designationCode: '',
-                designationName: '',
-                departmentId: '',
-                gradeLevel: '',
-                status: 'ACTIVE',
-              });
-              setShowDesigModal(true);
-            }}
+            onClick={() => navigate(REGISTRATION_ROUTES.designation)}
           >
             + Add Designation
           </button>
@@ -253,7 +237,7 @@ function OrganizationPage() {
             <tbody>
               {filteredDepts.length === 0 ? (
                 <tr>
-                  <td colSpan="6" style={{ textCenter: 'center', padding: '24px' }}>
+                  <td colSpan="6" style={{ textAlign: 'center', padding: '24px' }}>
                     No departments found.
                   </td>
                 </tr>
@@ -297,7 +281,7 @@ function OrganizationPage() {
             <tbody>
               {filteredDesigs.length === 0 ? (
                 <tr>
-                  <td colSpan="6" style={{ textCenter: 'center', padding: '24px' }}>
+                  <td colSpan="6" style={{ textAlign: 'center', padding: '24px' }}>
                     No designations found.
                   </td>
                 </tr>

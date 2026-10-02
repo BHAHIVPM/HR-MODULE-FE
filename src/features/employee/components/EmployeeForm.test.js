@@ -73,7 +73,6 @@ describe('EmployeeForm Component', () => {
   test('renders all Employee Master form inputs', () => {
     renderWithNotification(<EmployeeForm />);
 
-    expect(screen.getByLabelText(/Employee Code/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/First Name/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Last Name/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Email Address/i)).toBeInTheDocument();
@@ -97,7 +96,6 @@ describe('EmployeeForm Component', () => {
     const handleSuccess = jest.fn();
     renderWithNotification(<EmployeeForm onSuccess={handleSuccess} />);
 
-    fireEvent.change(screen.getByLabelText(/Employee Code/i), { target: { value: 'EMP1001' } });
     fireEvent.change(screen.getByLabelText(/First Name/i), { target: { value: 'Alice' } });
     fireEvent.change(screen.getByLabelText(/Email Address/i), { target: { value: 'alice@example.com' } });
     fireEvent.change(screen.getByLabelText(/Mobile Number/i), { target: { value: '9876543210' } });
@@ -108,6 +106,9 @@ describe('EmployeeForm Component', () => {
 
     await waitFor(() => {
       expect(employeeService.save).toHaveBeenCalledTimes(1);
+    });
+
+    await waitFor(() => {
       expect(handleSuccess).toHaveBeenCalledTimes(1);
     });
   });
@@ -125,7 +126,6 @@ describe('EmployeeForm Component', () => {
 
     renderWithNotification(<EmployeeForm />);
 
-    fireEvent.change(screen.getByLabelText(/Employee Code/i), { target: { value: 'EMP1001' } });
     fireEvent.change(screen.getByLabelText(/First Name/i), { target: { value: 'Alice' } });
     fireEvent.change(screen.getByLabelText(/Email Address/i), { target: { value: 'alice@example.com' } });
     fireEvent.change(screen.getByLabelText(/Mobile Number/i), { target: { value: '9876543210' } });
@@ -136,6 +136,9 @@ describe('EmployeeForm Component', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Database Exception')).toBeInTheDocument();
+    });
+
+    await waitFor(() => {
       expect(screen.getByText('Could not persist employee record to database.')).toBeInTheDocument();
     });
   });

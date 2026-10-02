@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LoginForm from '../components/LoginForm';
 import authService from '../services/authService';
@@ -15,7 +15,7 @@ function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [exiting, setExiting] = useState(false);
   const navigate = useNavigate();
-  const { setIsAuthenticated } = useAuth();
+  const { setIsAuthenticated, isAuthenticated, checking } = useAuth();
 
   const goToDashboard = () => {
     setExiting(true);
@@ -24,25 +24,35 @@ function LoginPage() {
     }, 280);
   };
 
+  // GET /auth/auth-me already validated the token when the app booted.
+  // If it succeeded, the login process is skipped and the page goes
+  // straight to the dashboard.
+  useEffect(() => {
+    if (!checking && isAuthenticated) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [checking, isAuthenticated, navigate]);
+
   const handleLogin = async (credentials) => {
     setLoading(true);
     setError(null);
 
-    const loginId = credentials.loginId || credentials.username;
-    const password = credentials.password;
+    const loginId = (credentials.loginId || credentials.username || '').trim();
+    const password = credentials.password || '';
 
-    // Verhoeff checksum validation - every login ID must end with a valid Verhoeff check digit.
-    if (!isValidVerhoeff(loginId)) {
-      setError('Invalid Login ID: the Verhoeff check digit is incorrect.');
-      setLoading(false);
-      return;
-    }
-
+    // Dev fallback bypass check
     if ((loginId === DEV_USERNAME || loginId === 'admin') && password === DEV_PASSWORD) {
       sessionStorage.setItem(DEV_AUTH_KEY, 'true');
       sessionStorage.setItem(LOGIN_ID_KEY, loginId);
       setIsAuthenticated(true);
       goToDashboard();
+      return;
+    }
+
+    // Verhoeff checksum validation - production login IDs must have a valid Verhoeff check digit
+    if (!isValidVerhoeff(loginId)) {
+      setError('Invalid Login ID: the Verhoeff check digit is incorrect.');
+      setLoading(false);
       return;
     }
 

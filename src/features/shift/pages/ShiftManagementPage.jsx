@@ -1,12 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import shiftService from '../services/shiftService';
 import employeeShiftService from '../services/employeeShiftService';
+import { REGISTRATION_ROUTES } from '../../registration/config/moduleRegistrationConfig';
 import { useNotification } from '../../../context/NotificationContext';
 import './ShiftManagementPage.css';
 
 function ShiftManagementPage() {
   const { showSuccess, showErrorPopup } = useNotification();
-  const [activeTab, setActiveTab] = useState('shifts'); // 'shifts' | 'assignments'
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'shifts'); // 'shifts' | 'assignments'
 
   const [shifts, setShifts] = useState([]);
   const [employeeShifts, setEmployeeShifts] = useState([]);
@@ -76,10 +80,10 @@ function ShiftManagementPage() {
 
       if (selectedShift) {
         const res = await shiftService.update(selectedShift.shiftId, payload);
-        showSuccess(res?.data?.message || 'Shift timing updated.');
+        showSuccess(res?.data?.message || 'Shift timing updated.', res?.data?.header || 'Success');
       } else {
         const res = await shiftService.save(payload);
-        showSuccess(res?.data?.message || 'New shift created.');
+        showSuccess(res?.data?.message || 'New shift created.', res?.data?.header || 'Success');
       }
       setShowShiftModal(false);
       fetchShifts();
@@ -99,7 +103,7 @@ function ShiftManagementPage() {
       };
 
       const res = await employeeShiftService.assign(payload);
-      showSuccess(res?.data?.message || 'Shift assigned to employee successfully.');
+      showSuccess(res?.data?.message || 'Shift assigned to employee successfully.', res?.data?.header || 'Success');
       setShowAssignModal(false);
       fetchEmployeeShifts();
     } catch (err) {
@@ -125,7 +129,7 @@ function ShiftManagementPage() {
     if (!window.confirm(`Delete shift ${name}?`)) return;
     try {
       const res = await shiftService.delete(id);
-      showSuccess(res?.data?.message || 'Shift deleted.');
+      showSuccess(res?.data?.message || 'Shift deleted.', res?.data?.header || 'Success');
       fetchShifts();
     } catch (err) {
       showErrorPopup(err);
@@ -136,7 +140,7 @@ function ShiftManagementPage() {
     if (!window.confirm(`Remove shift assignment #${id}?`)) return;
     try {
       const res = await employeeShiftService.delete(id);
-      showSuccess(res?.data?.message || 'Shift assignment removed.');
+      showSuccess(res?.data?.message || 'Shift assignment removed.', res?.data?.header || 'Success');
       fetchEmployeeShifts();
     } catch (err) {
       showErrorPopup(err);
@@ -187,35 +191,14 @@ function ShiftManagementPage() {
         {activeTab === 'shifts' ? (
           <button
             className="btn-primary-action"
-            onClick={() => {
-              setSelectedShift(null);
-              setShiftForm({
-                shiftCode: '',
-                shiftName: '',
-                startTime: '09:00',
-                endTime: '18:00',
-                breakDurationMinutes: 60,
-                weeklyOffDays: 'SATURDAY,SUNDAY',
-                status: 'ACTIVE',
-              });
-              setShowShiftModal(true);
-            }}
+            onClick={() => navigate(REGISTRATION_ROUTES.shift)}
           >
             + Create New Shift
           </button>
         ) : (
           <button
             className="btn-primary-action"
-            onClick={() => {
-              setAssignForm({
-                employeeId: '',
-                shiftId: shifts[0]?.shiftId || '',
-                effectiveFrom: new Date().toISOString().split('T')[0],
-                effectiveTo: '',
-                status: 'ACTIVE',
-              });
-              setShowAssignModal(true);
-            }}
+            onClick={() => navigate(REGISTRATION_ROUTES['employee-shift'])}
           >
             + Assign Shift to Employee
           </button>
@@ -241,7 +224,7 @@ function ShiftManagementPage() {
             <tbody>
               {filteredShifts.length === 0 ? (
                 <tr>
-                  <td colSpan="7" style={{ textCenter: 'center', padding: '24px' }}>
+                  <td colSpan="7" style={{ textAlign: 'center', padding: '24px' }}>
                     No shifts defined yet.
                   </td>
                 </tr>
@@ -287,7 +270,7 @@ function ShiftManagementPage() {
             <tbody>
               {filteredAssignments.length === 0 ? (
                 <tr>
-                  <td colSpan="7" style={{ textCenter: 'center', padding: '24px' }}>
+                  <td colSpan="7" style={{ textAlign: 'center', padding: '24px' }}>
                     No employee shift assignments found.
                   </td>
                 </tr>

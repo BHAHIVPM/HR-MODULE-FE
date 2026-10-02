@@ -10,6 +10,7 @@ import UserManagementPage from '../features/user/pages/UserManagementPage';
 import UserRegistrationPage from '../features/registration/pages/UserRegistrationPage';
 import EmployeeRegistrationPage from '../features/registration/pages/EmployeeRegistrationPage';
 import ClientRegistrationPage from '../features/registration/pages/ClientRegistrationPage';
+import ModuleRegistrationPage from '../features/registration/pages/ModuleRegistrationPage';
 import ProtectedRoute from './ProtectedRoute';
 import MainLayout from '../layouts/MainLayout';
 
@@ -22,6 +23,8 @@ import PayrollManagementPage from '../features/payroll/pages/PayrollManagementPa
 import AssetManagementPage from '../features/asset/pages/AssetManagementPage';
 import DocumentManagementPage from '../features/document/pages/DocumentManagementPage';
 import PerformanceReviewPage from '../features/performance/pages/PerformanceReviewPage';
+import RoleAssignmentPage from '../features/role-assignment/pages/RoleAssignmentPage';
+import MenuManagementPage from '../features/menu/pages/MenuManagementPage';
 
 import ServerDownModal from '../components/common/ServerDownModal/ServerDownModal';
 
@@ -54,10 +57,13 @@ function AppRoutes() {
                 <Route path="/documents" element={<DocumentManagementPage />} />
                 <Route path="/performance-reviews" element={<PerformanceReviewPage />} />
                 <Route path="/userData" element={<UserManagementPage />} />
+                <Route path="/role-assignment" element={<RoleAssignmentPage />} />
+                <Route path="/menu-management" element={<MenuManagementPage />} />
                 <Route path="/clients" element={<ClientRegistrationPage />} />
                 <Route path="/registrations/user" element={<UserRegistrationPage />} />
                 <Route path="/registrations/employee" element={<EmployeeRegistrationPage />} />
                 <Route path="/registrations/client" element={<ClientRegistrationPage />} />
+                <Route path="/registrations/:moduleKey" element={<ModuleRegistrationPage />} />
               </Route>
             </Routes>
           </BrowserRouter>
