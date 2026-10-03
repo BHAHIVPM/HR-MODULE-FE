@@ -29,8 +29,9 @@ export function NotificationProvider({ children }) {
   }, []);
 
   /** Returns true when an identical toast was shown within the last 2s. */
-  const checkDuplicateToast = useCallback((message, type, title) => {
-    const key = `${type}::${title || ''}::${message || ''}`;
+  const checkDuplicateToast = useCallback((message, type) => {
+    const cleanMsg = (message || '').trim().toLowerCase();
+    const key = `${type}::${cleanMsg}`;
     if (lastToastKeyRef.current === key) return true;
     lastToastKeyRef.current = key;
     setTimeout(() => {
@@ -55,7 +56,7 @@ export function NotificationProvider({ children }) {
    * messages never stack.
    */
   const showSuccess = useCallback((message, title = 'Success') => {
-    if (checkDuplicateToast(message, 'success', title)) return null;
+    if (checkDuplicateToast(message, 'success')) return null;
     return showToast(message, 'success', title, 1500);
   }, [showToast, checkDuplicateToast]);
 
