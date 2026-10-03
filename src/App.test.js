@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import EmployeeManagementPage from './features/employee/pages/EmployeeManagementPage';
 import { NotificationProvider } from './context/NotificationContext';
 import employeeService from './features/employee/services/employeeService';
+import { MemoryRouter } from 'react-router-dom';
 
 jest.mock('./features/employee/services/employeeService', () => ({
   __esModule: true,
@@ -15,6 +16,16 @@ jest.mock('./features/employee/services/employeeService', () => ({
     delete: jest.fn(),
   },
 }));
+
+// Renders the page inside the providers it needs (router + notifications)
+const renderPage = () =>
+  render(
+    <MemoryRouter>
+      <NotificationProvider>
+        <EmployeeManagementPage />
+      </NotificationProvider>
+    </MemoryRouter>
+  );
 
 describe('EmployeeManagementPage Component', () => {
   const mockEmployees = [
@@ -60,11 +71,7 @@ describe('EmployeeManagementPage Component', () => {
   });
 
   test('renders EmployeeManagementPage with employee directory', async () => {
-    render(
-      <NotificationProvider>
-        <EmployeeManagementPage />
-      </NotificationProvider>
-    );
+    renderPage();
 
     expect(screen.getByText(/Employee Directory/i)).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/Search by code, name, email, department/i)).toBeInTheDocument();
@@ -80,11 +87,7 @@ describe('EmployeeManagementPage Component', () => {
   });
 
   test('updates employee status via status change dropdown', async () => {
-    render(
-      <NotificationProvider>
-        <EmployeeManagementPage />
-      </NotificationProvider>
-    );
+    renderPage();
 
     await waitFor(() => {
       expect(screen.getByText('EMP001')).toBeInTheDocument();
