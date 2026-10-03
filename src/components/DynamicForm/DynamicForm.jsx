@@ -222,23 +222,6 @@ function DynamicForm({
   );
 }
 
-function AlertIcon() {
-  return (
-    <svg viewBox="0 0 20 20" width="16" height="16" fill="none" aria-hidden="true">
-      <circle cx="10" cy="10" r="8.5" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M10 6.5V10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <circle cx="10" cy="13.5" r="0.9" fill="currentColor" />
-    </svg>
-  );
-}
 
-function SuccessIcon() {
-  return (
-    <svg viewBox="0 0 20 20" width="16" height="16" fill="none" aria-hidden="true">
-      <circle cx="10" cy="10" r="8.5" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M6.5 10.2l2.3 2.3 4.7-5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
 
 export default DynamicForm;
