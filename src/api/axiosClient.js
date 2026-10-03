@@ -1,10 +1,11 @@
 import axios from 'axios';
 
-const axiosClient = axios.create({
-  baseURL: 'http://localhost:8080/',
-  withCredentials: true, // REQUIRED so the httpOnly cookie is sent/received
-});
+const API_BASE_URL = (process.env.REACT_APP_API_URL || 'http://localhost:8080').replace(/\/+$/, '');
 
+const axiosClient = axios.create({
+  baseURL: `${API_BASE_URL}/`,
+  withCredentials: true,
+});
 export const LOGIN_ID_KEY = 'hr-login-id';
 export const DEV_AUTH_KEY = 'hr-dev-auth';
 
@@ -168,11 +169,10 @@ axiosClient.interceptors.response.use(
 
       try {
         await axios.post(
-          `http://localhost:8080/auth/refresh-token/${encodeURIComponent(loginId)}`,
+          `${API_BASE_URL}/auth/refresh-token/${encodeURIComponent(loginId)}`,
           {},
           { withCredentials: true }
         );
-
         processQueue(null);
         return axiosClient(originalRequest);
       } catch (refreshErr) {
