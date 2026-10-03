@@ -22,11 +22,11 @@ jobs:
 
       - run: npm run build
         env:
-          REACT_APP_API_URL: http://localhost:8080
+          REACT_APP_API_URL: ${{ vars.REACT_APP_API_URL || 'http://localhost:8080' }}
           CI: false
 
       - name: Deploy to Netlify
-        run: npx netlify-cli deploy --prod --dir=build
+        run: npx netlify-cli deploy --prod --dir=build --no-build
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
