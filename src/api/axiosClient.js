@@ -1,6 +1,14 @@
 import axios from 'axios';
 
-const API_BASE_URL = (process.env.REACT_APP_API_URL || 'http://localhost:8080').replace(/\/+$/, '');
+const getDefaultBaseUrl = () => {
+  if (typeof window !== 'undefined' && window.location && window.location.hostname) {
+    const protocol = window.location.protocol || 'http:';
+    return `${protocol}//${window.location.hostname}:8080`;
+  }
+  return 'http://localhost:8080';
+};
+
+const API_BASE_URL = (process.env.REACT_APP_API_URL || getDefaultBaseUrl()).replace(/\/+$/, '');
 
 const axiosClient = axios.create({
   baseURL: `${API_BASE_URL}/`,
@@ -8,6 +16,23 @@ const axiosClient = axios.create({
 });
 export const LOGIN_ID_KEY = 'hr-login-id';
 export const DEV_AUTH_KEY = 'hr-dev-auth';
+
+export const getStoredLoginId = () => {
+  try {
+    return sessionStorage.getItem(LOGIN_ID_KEY) || localStorage.getItem(LOGIN_ID_KEY);
+  } catch {
+    return null;
+  }
+};
+
+export const clearStoredAuth = () => {
+  try {
+    sessionStorage.removeItem(LOGIN_ID_KEY);
+    sessionStorage.removeItem(DEV_AUTH_KEY);
+    localStorage.removeItem(LOGIN_ID_KEY);
+    localStorage.removeItem(DEV_AUTH_KEY);
+  } catch {}
+};
 
 let isRefreshing = false;
 let failedQueue = [];
@@ -142,7 +167,7 @@ axiosClient.interceptors.response.use(
 
     const originalRequest = err.config;
 
-    if (sessionStorage.getItem(DEV_AUTH_KEY) === 'true') {
+    if (sessionStorage.getItem(DEV_AUTH_KEY) === 'true' || localStorage.getItem(DEV_AUTH_KEY) === 'true') {
       return Promise.reject(err);
     }
 
@@ -153,7 +178,7 @@ axiosClient.interceptors.response.use(
     if (err.response?.status === 401 && !originalRequest?._retry) {
       originalRequest._retry = true;
 
-      const loginId = sessionStorage.getItem(LOGIN_ID_KEY);
+      const loginId = getStoredLoginId();
       if (!loginId) {
         redirectToLogin();
         return Promise.reject(err);
@@ -177,7 +202,7 @@ axiosClient.interceptors.response.use(
         return axiosClient(originalRequest);
       } catch (refreshErr) {
         processQueue(refreshErr);
-        sessionStorage.removeItem(LOGIN_ID_KEY);
+        clearStoredAuth();
         redirectToLogin();
         return Promise.reject(refreshErr);
       } finally {

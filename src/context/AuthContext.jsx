@@ -12,8 +12,25 @@ export function AuthProvider({ children }) {
   const [checking, setChecking] = useState(true);
   const [user, setUser] = useState(null);
 
+  const getStoredItem = (key) => {
+    try {
+      return sessionStorage.getItem(key) || localStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  };
+
+  const clearStorage = () => {
+    try {
+      sessionStorage.removeItem(DEV_AUTH_KEY);
+      sessionStorage.removeItem(LOGIN_ID_KEY);
+      localStorage.removeItem(DEV_AUTH_KEY);
+      localStorage.removeItem(LOGIN_ID_KEY);
+    } catch {}
+  };
+
   const checkAuth = async () => {
-    if (sessionStorage.getItem(DEV_AUTH_KEY) === 'true') {
+    if (getStoredItem(DEV_AUTH_KEY) === 'true') {
       setIsAuthenticated(true);
       setChecking(false);
       return;
@@ -30,12 +47,12 @@ export function AuthProvider({ children }) {
         setIsAuthenticated(true);
       } else {
         setIsAuthenticated(false);
-        sessionStorage.removeItem(LOGIN_ID_KEY);
+        clearStorage();
       }
     } catch {
       // Missing / expired / tampered token (401) -> require login again.
       setIsAuthenticated(false);
-      sessionStorage.removeItem(LOGIN_ID_KEY);
+      clearStorage();
     } finally {
       setChecking(false);
     }
@@ -48,8 +65,7 @@ export function AuthProvider({ children }) {
   const clearUser = useCallback(() => setUser(null), []);
 
   const logout = useCallback(async () => {
-    sessionStorage.removeItem(DEV_AUTH_KEY);
-    sessionStorage.removeItem(LOGIN_ID_KEY);
+    clearStorage();
     setUser(null);
     try {
       await authService.logout();
