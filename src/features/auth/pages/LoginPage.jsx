@@ -44,6 +44,8 @@ function LoginPage() {
     if ((loginId === DEV_USERNAME || loginId === 'admin') && password === DEV_PASSWORD) {
       sessionStorage.setItem(DEV_AUTH_KEY, 'true');
       sessionStorage.setItem(LOGIN_ID_KEY, loginId);
+      localStorage.setItem(DEV_AUTH_KEY, 'true');
+      localStorage.setItem(LOGIN_ID_KEY, loginId);
       setIsAuthenticated(true);
       goToDashboard();
       return;
@@ -59,6 +61,7 @@ function LoginPage() {
     try {
       await authService.login(loginId, password);
       sessionStorage.setItem(LOGIN_ID_KEY, loginId);
+      localStorage.setItem(LOGIN_ID_KEY, loginId);
       setIsAuthenticated(true);
       goToDashboard();
     } catch (err) {

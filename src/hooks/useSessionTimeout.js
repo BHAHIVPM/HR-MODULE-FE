@@ -15,7 +15,22 @@ export function useSessionTimeout() {
   const lastRefreshAt = useRef(Date.now());
   const { setIsAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const loginId = sessionStorage.getItem(LOGIN_ID_KEY);
+  const getStoredLoginId = () => {
+    try {
+      return sessionStorage.getItem(LOGIN_ID_KEY) || localStorage.getItem(LOGIN_ID_KEY);
+    } catch {
+      return null;
+    }
+  };
+
+  const clearStorage = () => {
+    try {
+      sessionStorage.removeItem(LOGIN_ID_KEY);
+      sessionStorage.removeItem('hr-dev-auth');
+      localStorage.removeItem(LOGIN_ID_KEY);
+      localStorage.removeItem('hr-dev-auth');
+    } catch {}
+  };
 
   const clearTimers = () => {
     clearTimeout(warningTimer.current);
@@ -24,7 +39,7 @@ export function useSessionTimeout() {
 
   const forceLogout = useCallback(() => {
     clearTimers();
-    sessionStorage.removeItem(LOGIN_ID_KEY);
+    clearStorage();
     setIsAuthenticated(false);
     navigate('/login');
   }, [navigate, setIsAuthenticated]);
@@ -43,36 +58,42 @@ export function useSessionTimeout() {
     if (now - lastRefreshAt.current < REFRESH_THROTTLE_MS) return;
 
     lastRefreshAt.current = now;
-    if (!loginId) {
+    const currentLoginId = getStoredLoginId();
+    if (!currentLoginId) {
       forceLogout();
       return;
     }
     authService
-      .refresh(loginId)
+      .refresh(currentLoginId)
       .then(() => resetTimers()) // token renewed → restart 13/15 min clock
       .catch(() => forceLogout()); // refresh failed (e.g. session truly expired)
-  }, [resetTimers, forceLogout, loginId]);
+  }, [resetTimers, forceLogout]);
 
   useEffect(() => {
     resetTimers(); // start clock as soon as this hook mounts (i.e. after login)
 
     window.addEventListener('mousemove', handleActivity);
     window.addEventListener('keydown', handleActivity);
+    window.addEventListener('touchstart', handleActivity, { passive: true });
+    window.addEventListener('scroll', handleActivity, { passive: true });
 
     return () => {
       clearTimers();
       window.removeEventListener('mousemove', handleActivity);
       window.removeEventListener('keydown', handleActivity);
+      window.removeEventListener('touchstart', handleActivity);
+      window.removeEventListener('scroll', handleActivity);
     };
   }, [handleActivity, resetTimers]);
 
   // Called when user clicks "Stay logged in" on the warning popup
   const extendSession = () => {
-    if (!loginId) {
+    const currentLoginId = getStoredLoginId();
+    if (!currentLoginId) {
       forceLogout();
       return;
     }
-    authService.refresh(loginId).then(resetTimers).catch(forceLogout);
+    authService.refresh(currentLoginId).then(resetTimers).catch(forceLogout);
   };
 
   return { showWarning, extendSession, forceLogout };
