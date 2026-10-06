@@ -201,6 +201,37 @@ const MANDATORY_DEVELOPER_MENUS = [
   },
 ];
 
+// Default Dashboard menu item prepended for ALL users if backend response does not include it
+const DASHBOARD_MAIN_GROUP = {
+  mainGroupId: 'default-dashboard-group',
+  mainGroupName: 'Dashboard',
+  iconPath: 'dashboard-icon',
+  subGroup: [
+    {
+      subGroupId: 'default-dashboard-subgroup',
+      subGroupName: null,
+      subItems: [
+        {
+          menuNameId: 'default-dashboard-item',
+          menuName: 'Dashboard',
+          componentPath: '/dashboard',
+          canView: true,
+          canAdd: false,
+        },
+      ],
+    },
+  ],
+};
+
+// Ensures Dashboard is the #1 default menu item for ALL users
+function ensureDashboardMenu(menu) {
+  const base = Array.isArray(menu) ? menu : [];
+  if (menuHasVisibleItem(base, '/dashboard')) {
+    return base;
+  }
+  return [DASHBOARD_MAIN_GROUP, ...base];
+}
+
 // True when `menu` already contains a VISIBLE item pointing at `componentPath`.
 function menuHasVisibleItem(menu, componentPath) {
   const normTarget = componentPath ? componentPath.split('?')[0] : '';
@@ -228,9 +259,16 @@ function ensureMandatoryDeveloperMenus(menu) {
   return missing.length > 0 ? [...base, ...missing] : base;
 }
 
+// Helper to auto-close drawer on mobile navigation
+function handleMobileNav(setIsCollapsed) {
+  if (window.innerWidth <= 1024) {
+    setIsCollapsed(true);
+  }
+}
+
 // Static navigation fallback: used only when the backend menu could not be loaded,
 // so the app stays navigable during network/server failures.
-function renderStaticNav(location, navigate, isCollapsed) {
+function renderStaticNav(location, navigate, isCollapsed, setIsCollapsed) {
   return NAV_ITEMS.map((item) => {
     const isListActive = location.pathname === item.listPath;
     const isFormActive = item.formPath && location.pathname === item.formPath;
@@ -240,13 +278,17 @@ function renderStaticNav(location, navigate, isCollapsed) {
       <div
         key={item.label}
         className={`sidebar-menu-row ${isRowActive ? 'sidebar-menu-row-active' : ''}`}
-        onClick={() => navigate(item.listPath)}
+        onClick={() => {
+          navigate(item.listPath);
+          handleMobileNav(setIsCollapsed);
+        }}
         role="button"
         tabIndex={0}
         data-tooltip={item.label}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             navigate(item.listPath);
+            handleMobileNav(setIsCollapsed);
           }
         }}
       >
@@ -263,6 +305,7 @@ function renderStaticNav(location, navigate, isCollapsed) {
             onClick={(e) => {
               e.stopPropagation();
               navigate(item.formPath);
+              handleMobileNav(setIsCollapsed);
             }}
             aria-label={`Add ${item.label}`}
           >
@@ -277,7 +320,7 @@ function renderStaticNav(location, navigate, isCollapsed) {
 // Backend-driven navigation built from GET /api/main-group-operation/full.
 // Menu names come straight from the backend response (English master data);
 // entries with canView === false are hidden.
-function renderBackendNav(menu, location, isCollapsed, expandedGroups, toggleGroup) {
+function renderBackendNav(menu, location, isCollapsed, expandedGroups, toggleGroup, navigate, setIsCollapsed) {
   return menu.map((mainGroup) => {
     const mgKey = String(mainGroup.mainGroupId ?? mainGroup.mainGroupName);
     const subGroups = Array.isArray(mainGroup.subGroup) ? mainGroup.subGroup : [];
@@ -303,33 +346,63 @@ function renderBackendNav(menu, location, isCollapsed, expandedGroups, toggleGro
 
     const isOpen = expandedGroups[mgKey] !== undefined ? !!expandedGroups[mgKey] : hasActiveChild;
 
+    // Check if this is a single-item group without subgroup title (e.g. Dashboard)
+    const singleSubItem =
+      groupsWithItems.length === 1 &&
+      groupsWithItems[0].subItems.length === 1 &&
+      !groupsWithItems[0].subGroupName
+        ? groupsWithItems[0].subItems[0]
+        : null;
+
+    const isSingleActive =
+      singleSubItem &&
+      singleSubItem.componentPath &&
+      (currentFull === singleSubItem.componentPath ||
+        (location.pathname === singleSubItem.componentPath && !location.search));
+
     return (
       <div key={`mg-${mgKey}`} className={`sidebar-group ${isOpen ? 'sidebar-group-open' : ''}`}>
         <div
-          className={`sidebar-menu-row sidebar-main-group-row ${isOpen ? 'sidebar-main-group-row-open' : ''}`}
-          onClick={() => toggleGroup(mgKey)}
+          className={`sidebar-menu-row sidebar-main-group-row ${
+            isOpen ? 'sidebar-main-group-row-open' : ''
+          } ${isSingleActive ? 'sidebar-menu-row-active' : ''}`}
+          onClick={() => {
+            if (singleSubItem?.componentPath) {
+              navigate(singleSubItem.componentPath);
+              handleMobileNav(setIsCollapsed);
+            } else {
+              toggleGroup(mgKey);
+            }
+          }}
           role="button"
           tabIndex={0}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
-              toggleGroup(mgKey);
+              if (singleSubItem?.componentPath) {
+                navigate(singleSubItem.componentPath);
+                handleMobileNav(setIsCollapsed);
+              } else {
+                toggleGroup(mgKey);
+              }
             }
           }}
           data-tooltip={mainGroup.mainGroupName}
         >
           <div className="sidebar-menu-left">
-            {mainGroup.iconPath ? (
+            {mainGroup.iconPath === 'dashboard-icon' ? (
+              <DashboardIcon />
+            ) : mainGroup.iconPath ? (
               <i className={mainGroup.iconPath} style={{ fontSize: 16 }} aria-hidden="true" />
             ) : (
               <MenuIcon />
             )}
             <span className="sidebar-menu-label">{mainGroup.mainGroupName}</span>
           </div>
-          {!isCollapsed && (
+          {!singleSubItem && !isCollapsed && (
             <ChevronIcon className={`sidebar-chevron ${isOpen ? 'sidebar-chevron-open' : ''}`} />
           )}
         </div>
-        {(isOpen || isCollapsed) && (
+        {!singleSubItem && (isOpen || isCollapsed) && (
           <ul className="sidebar-submenu">
             {groupsWithItems.map((subGroup) => (
               <Fragment key={`sg-${subGroup.subGroupId ?? `null-${mainGroup.mainGroupId}`}`}>
@@ -344,7 +417,6 @@ function renderBackendNav(menu, location, isCollapsed, expandedGroups, toggleGro
                       (currentFull === item.componentPath ||
                         (location.pathname === item.componentPath && !location.search));
                     const addPath = resolveAddPath(item.componentPath);
-                    // Backend menu items expose the user's add privilege via canAdd.
                     const showAdd = !!addPath && item.canAdd !== false;
                     const isAddActive = showAdd && location.pathname === addPath;
                     return (
@@ -352,6 +424,7 @@ function renderBackendNav(menu, location, isCollapsed, expandedGroups, toggleGro
                         <Link
                           to={item.componentPath || '#'}
                           className={`sidebar-sublink ${isActive ? 'sidebar-sublink-active' : ''}`}
+                          onClick={() => handleMobileNav(setIsCollapsed)}
                         >
                           {item.menuName}
                         </Link>
@@ -361,7 +434,10 @@ function renderBackendNav(menu, location, isCollapsed, expandedGroups, toggleGro
                             className={`sidebar-add-btn sidebar-add-btn-sm ${isAddActive ? 'sidebar-add-btn-active' : ''}`}
                             title={`Register / Add ${item.menuName}`}
                             aria-label={`Add ${item.menuName}`}
-                            onClick={(e) => e.stopPropagation()}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleMobileNav(setIsCollapsed);
+                            }}
                           >
                             +
                           </Link>
@@ -407,12 +483,14 @@ function MainLayout() {
     });
   };
 
-  // DEVELOPER accounts (the seeded bootstrap user) always keep access to the
-  // User Management, Role Assignment and Menu Management modules - see
-  // MANDATORY_DEVELOPER_MENUS.
+  // Ensure Dashboard menu is always top-level default menu for ALL users.
+  // DEVELOPER accounts also get User Management, Role Assignment & Menu Management.
   const { currentUserType } = useCurrentUser();
   const isDeveloperUser = String(currentUserType || '').trim().toUpperCase() === 'DEVELOPER';
-  const effectiveMenu = isDeveloperUser ? ensureMandatoryDeveloperMenus(menu) : menu;
+  const menuWithDashboard = ensureDashboardMenu(menu);
+  const effectiveMenu = isDeveloperUser
+    ? ensureMandatoryDeveloperMenus(menuWithDashboard)
+    : menuWithDashboard;
 
   const loadMenu = useCallback(async () => {
     try {
@@ -431,14 +509,10 @@ function MainLayout() {
 
   let navContent = null;
   if (menuError) {
-    // Server failure: static fallback keeps the app navigable (it already
-    // contains the User Management, Role Assignment and Menu Management
-    // entries, so developers are covered here too).
-    navContent = renderStaticNav(location, navigate, isCollapsed);
+    navContent = renderStaticNav(location, navigate, isCollapsed, setIsCollapsed);
   } else if (Array.isArray(effectiveMenu) && effectiveMenu.length > 0) {
-    navContent = renderBackendNav(effectiveMenu, location, isCollapsed, expandedGroups, toggleGroup);
+    navContent = renderBackendNav(effectiveMenu, location, isCollapsed, expandedGroups, toggleGroup, navigate, setIsCollapsed);
   } else if (Array.isArray(menu)) {
-    // Backend answered but the account has no menus assigned.
     navContent = (
       <div className="sidebar-empty">
         <span>No menus assigned to your account.</span>
@@ -448,6 +522,14 @@ function MainLayout() {
 
   return (
     <div className="main-layout">
+      {!isCollapsed && (
+        <div
+          className="main-layout-backdrop"
+          onClick={() => setIsCollapsed(true)}
+          aria-hidden="true"
+        />
+      )}
+
       <aside className={`main-layout-sidebar ${isCollapsed ? 'is-collapsed' : ''}`}>
         <div className="sidebar-brand">
           <button
@@ -470,7 +552,11 @@ function MainLayout() {
       </aside>
 
       <div className="main-layout-body">
-        <AppHeader title={getPageTitle(location.pathname)} />
+        <AppHeader
+          title={getPageTitle(location.pathname)}
+          onToggleSidebar={toggleSidebar}
+          isSidebarCollapsed={isCollapsed}
+        />
 
         <main className={`main-layout-content ${location.state?.fromLogin ? 'page-enter' : ''}`}>
           <Outlet />
