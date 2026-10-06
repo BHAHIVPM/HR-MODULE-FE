@@ -499,22 +499,69 @@
   }
 }
 
+/* Backdrop overlay for mobile drawer mode */
+.main-layout-backdrop {
+  display: none;
+}
+
 /* Tablet & Mobile responsive adjustments */
 @media (max-width: 1024px) {
+  .main-layout-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 260px !important;
+    flex: 0 0 260px !important;
+    z-index: 1000;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .main-layout-sidebar.is-collapsed {
+    transform: translateX(-100%);
+    width: 260px !important;
+    flex: 0 0 260px !important;
+  }
+
+  /* When expanded on mobile/tablet screen, reveal titles and sublabels in full drawer mode */
+  .main-layout-sidebar:not(.is-collapsed) .sidebar-title,
+  .main-layout-sidebar:not(.is-collapsed) .sidebar-menu-label,
+  .main-layout-sidebar:not(.is-collapsed) .sidebar-subgroup-label,
+  .main-layout-sidebar:not(.is-collapsed) .sidebar-add-btn {
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  .main-layout-backdrop {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(2px);
+    z-index: 990;
+    animation: backdropFadeIn 0.2s ease;
+  }
+
+  .main-layout-body {
+    width: 100%;
+    min-width: 0;
+  }
+
   .main-layout-content {
     padding: 20px 16px;
   }
 }
 
-@media (max-width: 640px) {
-  .main-layout-sidebar:not(.is-collapsed) {
-    position: fixed;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
-  }
+@keyframes backdropFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 
+@media (max-width: 640px) {
   .main-layout-content {
     padding: 16px 12px;
   }

@@ -1,11 +1,11 @@
 import axios from 'axios';
 
 const getDefaultBaseUrl = () => {
-  if (typeof window !== 'undefined' && window.location && window.location.hostname) {
-    const protocol = window.location.protocol || 'http:';
-    return `${protocol}//${window.location.hostname}:8080`;
-  }
-  return 'http://localhost:8080';
+  // if (typeof window !== 'undefined' && window.location && window.location.hostname) {
+  //   const protocol = window.location.protocol || 'http:';
+  //   return `${protocol}//${window.location.hostname}:8080`;
+  // }
+  return 'https://hr-module-o0ex.onrender.com';
 };
 
 const API_BASE_URL = (process.env.REACT_APP_API_URL || getDefaultBaseUrl()).replace(/\/+$/, '');
@@ -31,7 +31,7 @@ export const clearStoredAuth = () => {
     sessionStorage.removeItem(DEV_AUTH_KEY);
     localStorage.removeItem(LOGIN_ID_KEY);
     localStorage.removeItem(DEV_AUTH_KEY);
-  } catch {}
+  } catch { }
 };
 
 let isRefreshing = false;
