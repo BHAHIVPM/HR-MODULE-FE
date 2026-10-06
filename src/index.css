@@ -139,3 +139,35 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* Global Responsive Table Utilities */
+.table-responsive,
+.user-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 8px;
+  margin-bottom: 4px;
+}
+
+.table-responsive table,
+.user-table-wrapper table {
+  min-width: 680px;
+}
+
+.table-responsive::-webkit-scrollbar,
+.user-table-wrapper::-webkit-scrollbar {
+  height: 6px;
+}
+
+.table-responsive::-webkit-scrollbar-track,
+.user-table-wrapper::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 3px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb,
+.user-table-wrapper::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 3px;
+}

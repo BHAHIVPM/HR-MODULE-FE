@@ -126,7 +126,7 @@ function UserManagementPage() {
             No user records found in the database.
           </div>
         ) : (
-          <div style={{ overflowX: 'auto' }}>
+          <div className="user-table-wrapper">
             <table className="user-table">
               <thead>
                 <tr>
