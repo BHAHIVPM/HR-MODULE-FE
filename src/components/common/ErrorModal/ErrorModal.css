@@ -24,8 +24,9 @@
 .error-modal-dialog {
   background: #ffffff;
   border-radius: 16px;
-  max-width: 480px;
+  max-width: 600px;
   width: 100%;
+  max-height: 85vh;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(239, 68, 68, 0.15);
   overflow: hidden;
   animation: errorScaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -51,6 +52,7 @@
   padding: 20px 24px;
   background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
   border-bottom: 1px solid #fecaca;
+  flex-shrink: 0;
 }
 
 .error-icon-wrapper {
@@ -116,10 +118,13 @@
 }
 
 .error-modal-body {
-  padding: 24px;
+  padding: 20px 24px;
   color: #334155;
   font-size: 14px;
   line-height: 1.6;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
 }
 
 .error-modal-message {
@@ -127,6 +132,13 @@
   font-weight: 500;
   color: #1e293b;
   word-break: break-word;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  max-height: 45vh;
+  overflow-y: auto;
+  padding-right: 6px;
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 .error-modal-details {
@@ -138,10 +150,12 @@
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
   font-size: 12px;
   color: #475569;
-  max-height: 140px;
+  max-height: 200px;
   overflow-y: auto;
   white-space: pre-wrap;
   word-break: break-all;
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 .error-modal-footer {
@@ -151,6 +165,28 @@
   display: flex;
   justify-content: flex-end;
   gap: 12px;
+  flex-shrink: 0;
+}
+
+.error-modal-btn-copy {
+  padding: 9px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #475569;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.error-modal-btn-copy:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+  border-color: #94a3b8;
 }
 
 .error-modal-btn-dismiss {

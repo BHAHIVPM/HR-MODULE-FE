@@ -1,6 +1,6 @@
 .dynamic-form-card {
-  background: var(--white);
-  border: 1px solid var(--slate-200);
+  background: var(--surface-card, var(--white));
+  border: 1px solid var(--border-default, var(--slate-200));
   border-radius: 12px;
   padding: 28px 32px;
   box-shadow: var(--shadow-sm);
@@ -21,7 +21,7 @@
 .dynamic-form-header {
   margin-bottom: 24px;
   padding-bottom: 20px;
-  border-bottom: 1px solid var(--slate-200);
+  border-bottom: 1px solid var(--border-default, var(--slate-200));
 }
 
 .dynamic-form-header h2 {
@@ -29,13 +29,13 @@
   font-size: 20px;
   font-weight: 600;
   letter-spacing: -0.01em;
-  color: var(--slate-900);
+  color: var(--text-primary, var(--slate-900));
   margin: 0 0 6px;
 }
 
 .dynamic-form-header p {
   font-size: 14px;
-  color: var(--slate-600);
+  color: var(--text-secondary, var(--slate-600));
   margin: 0;
 }
 
@@ -62,9 +62,9 @@
 }
 
 .dynamic-form-alert-success {
-  background: #ecfdf3;
-  border: 1px solid #a6f4c5;
-  color: #027a48;
+  background: var(--success-bg, #ecfdf3);
+  border: 1px solid var(--success-border, #a6f4c5);
+  color: var(--success-text, #027a48);
 }
 
 .dynamic-form-grid {
@@ -81,7 +81,7 @@
   display: block;
   font-size: 13px;
   font-weight: 600;
-  color: var(--slate-900);
+  color: var(--text-primary, var(--slate-900));
   margin-bottom: 7px;
 }
 
@@ -95,12 +95,12 @@
 .dynamic-form-field textarea {
   width: 100%;
   padding: 10px 13px;
-  border: 1px solid var(--slate-200);
+  border: 1px solid var(--border-default, var(--slate-200));
   border-radius: 8px;
-  background: var(--slate-50);
+  background: var(--surface-input, var(--slate-50));
   font-size: 14px;
   font-family: var(--font-body);
-  color: var(--slate-900);
+  color: var(--text-primary, var(--slate-900));
   transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
 

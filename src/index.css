@@ -74,6 +74,8 @@
 
 [data-theme='dark'] {
   --slate-900: #f0f4f8;
+  --slate-800: #e2e8f0;
+  --slate-700: #cbd5e1;
   --slate-600: #98a2b3;
   --slate-500: #667085;
   --slate-400: #475467;
