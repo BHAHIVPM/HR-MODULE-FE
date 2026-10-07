@@ -599,58 +599,77 @@ function MobileNavSheet({ isOpen, onClose, menu, location, navigate, isDeveloper
 
   if (!isOpen) return null;
 
-  const items = [];
+  const groupsMap = new Map();
   const sourceMenu = Array.isArray(menu) ? menu : [];
 
-  sourceMenu.forEach((mainGroup) => {
-    const mgName = mainGroup.mainGroupName || 'Menu';
-    const subGroups = Array.isArray(mainGroup.subGroup) ? mainGroup.subGroup : [];
-    subGroups.forEach((subGroup) => {
-      const subItems = Array.isArray(subGroup.subItems) ? subGroup.subItems : [];
-      subItems.forEach((item) => {
-        if (item.canView !== false && item.componentPath) {
-          items.push({
-            group: mgName,
-            label: item.menuName,
-            path: item.componentPath,
-            canAdd: item.canAdd !== false,
-          });
-        }
+  if (sourceMenu.length > 0) {
+    sourceMenu.forEach((mainGroup) => {
+      const groupName = mainGroup.mainGroupName || 'Main Menu';
+      const subGroups = Array.isArray(mainGroup.subGroup) ? mainGroup.subGroup : [];
+      const groupItems = [];
+      subGroups.forEach((sg) => {
+        const subItems = Array.isArray(sg.subItems) ? sg.subItems : [];
+        subItems.forEach((item) => {
+          if (item.canView !== false && item.componentPath) {
+            groupItems.push({
+              id: item.menuNameId || item.componentPath,
+              label: item.menuName,
+              path: item.componentPath,
+              canAdd: item.canAdd !== false,
+            });
+          }
+        });
+      });
+      if (groupItems.length > 0) {
+        groupsMap.set(groupName, groupItems);
+      }
+    });
+  } else {
+    const defaultGroup = [];
+    NAV_ITEMS.forEach((item) => {
+      defaultGroup.push({
+        id: item.listPath,
+        label: item.label,
+        path: item.listPath,
+        canAdd: !!item.formPath,
       });
     });
+    groupsMap.set('General', defaultGroup);
+  }
+
+  const searchLower = searchTerm.trim().toLowerCase();
+  const filteredGroups = [];
+
+  groupsMap.forEach((items, groupTitle) => {
+    const matched = items.filter(
+      (item) =>
+        !searchLower ||
+        item.label.toLowerCase().includes(searchLower) ||
+        groupTitle.toLowerCase().includes(searchLower)
+    );
+    if (matched.length > 0) {
+      filteredGroups.push({ groupTitle, items: matched });
+    }
   });
-
-  const displayItems = items.length > 0 ? items : NAV_ITEMS.map((i) => ({
-    group: 'General',
-    label: i.label,
-    path: i.listPath,
-    canAdd: !!i.formPath,
-  }));
-
-  const filteredItems = displayItems.filter(
-    (item) =>
-      item.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.group.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   return (
     <div className="mobile-nav-overlay" onClick={onClose}>
       <div className="mobile-nav-sheet" onClick={(e) => e.stopPropagation()}>
         <div className="mobile-sheet-drag-handle" />
+        
         <div className="mobile-sheet-header">
-          <div className="mobile-sheet-profile">
-            <div className="mobile-sheet-avatar">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
+          <div className="mobile-sheet-brand">
+            <div className="mobile-brand-icon">
+              <svg viewBox="0 0 32 32" width="20" height="20" fill="none">
+                <path d="M16 2 L29 9 V23 L16 30 L3 23 V9 Z" stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round" />
               </svg>
             </div>
-            <div className="mobile-sheet-user-text">
-              <span className="mobile-sheet-user-name">HR Navigation</span>
-              <span className="mobile-sheet-user-role">{isDeveloperUser ? 'Developer' : 'Portal'} Workspace</span>
+            <div className="mobile-brand-text">
+              <span className="mobile-app-name">HR Module</span>
+              <span className="mobile-app-role">{isDeveloperUser ? 'DEVELOPER' : 'PORTAL'} WORKSPACE</span>
             </div>
           </div>
-          <button type="button" className="mobile-sheet-close-btn" onClick={onClose} aria-label="Close navigation sheet">
+          <button type="button" className="mobile-sheet-close-btn" onClick={onClose} aria-label="Close menu">
             &times;
           </button>
         </div>
@@ -662,7 +681,7 @@ function MobileNavSheet({ isOpen, onClose, menu, location, navigate, isDeveloper
           </svg>
           <input
             type="text"
-            placeholder="Search modules & pages..."
+            placeholder="Search menu or module..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -673,43 +692,56 @@ function MobileNavSheet({ isOpen, onClose, menu, location, navigate, isDeveloper
           )}
         </div>
 
-        <div className="mobile-sheet-grid">
-          {filteredItems.map((item) => {
-            const isActive = location.pathname === item.path.split('?')[0];
-            const addPath = resolveAddPath(item.path);
-            return (
-              <div
-                key={item.path + item.label}
-                className={`mobile-sheet-card ${isActive ? 'active' : ''}`}
-                onClick={() => {
-                  navigate(item.path);
-                  onClose();
-                }}
-              >
-                <div className="mobile-card-icon">
-                  <MenuIcon />
+        <div className="mobile-sheet-content-scroll">
+          {filteredGroups.length === 0 ? (
+            <div className="mobile-sheet-empty">No menu items match "{searchTerm}"</div>
+          ) : (
+            filteredGroups.map(({ groupTitle, items }) => (
+              <div key={groupTitle} className="mobile-nav-group">
+                <div className="mobile-group-header">{groupTitle}</div>
+                <div className="mobile-group-list">
+                  {items.map((item) => {
+                    const normPath = item.path.split('?')[0];
+                    const isActive = location.pathname === normPath;
+                    const addPath = resolveAddPath(item.path);
+
+                    return (
+                      <div
+                        key={item.id + item.label}
+                        className={`mobile-nav-item ${isActive ? 'active' : ''}`}
+                        onClick={() => {
+                          navigate(item.path);
+                          onClose();
+                        }}
+                      >
+                        <div className="mobile-item-icon">
+                          <MenuIcon />
+                        </div>
+                        <span className="mobile-item-title">{item.label}</span>
+                        {item.canAdd && addPath && (
+                          <button
+                            type="button"
+                            className="mobile-item-add-pill"
+                            title={`Add ${item.label}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(addPath);
+                              onClose();
+                            }}
+                          >
+                            + Add
+                          </button>
+                        )}
+                        <svg className="mobile-item-arrow" viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor">
+                          <path d="M7.5 5L12.5 10L7.5 15" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </div>
+                    );
+                  })}
                 </div>
-                <div className="mobile-card-info">
-                  <span className="mobile-card-title">{item.label}</span>
-                  <span className="mobile-card-group">{item.group}</span>
-                </div>
-                {item.canAdd && addPath && (
-                  <button
-                    type="button"
-                    className="mobile-card-add-btn"
-                    title={`Add ${item.label}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(addPath);
-                      onClose();
-                    }}
-                  >
-                    + Add
-                  </button>
-                )}
               </div>
-            );
-          })}
+            ))
+          )}
         </div>
       </div>
     </div>
