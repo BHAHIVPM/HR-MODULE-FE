@@ -224,38 +224,62 @@
 }
 
 /* ============ RESPONSIVE ============ */
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .user-page-container {
-    padding: 16px 12px;
-    gap: 16px;
+    padding: 12px 6px;
+    gap: 14px;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .user-page-header {
     flex-direction: column;
     align-items: stretch;
+    gap: 12px;
+  }
+
+  .user-page-title-group h1 {
+    font-size: 20px;
   }
 
   .btn-add-user {
     justify-content: center;
+    width: 100%;
   }
 
   .user-table-card {
-    padding: 14px;
+    padding: 12px 8px;
+    border-radius: 8px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .user-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    display: block;
+  }
+
+  .user-table {
+    min-width: 680px;
   }
 
   .user-table th,
   .user-table td {
-    padding: 10px 12px;
+    padding: 10px 10px;
     font-size: 13px;
+    white-space: nowrap;
   }
 
   .user-actions {
-    flex-direction: column;
+    flex-direction: row;
     gap: 6px;
   }
 
   .user-actions .btn-user-action {
-    width: 100%;
+    padding: 6px 10px;
+    font-size: 12px;
   }
 
   /* Keep the edit modal fully visible on small/short screens */

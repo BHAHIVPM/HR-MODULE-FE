@@ -506,13 +506,19 @@
 
 /* Tablet & Mobile responsive adjustments */
 @media (max-width: 1024px) {
+  .main-layout {
+    overflow-x: hidden;
+  }
+
   .main-layout-sidebar {
     position: fixed;
     top: 0;
     left: 0;
     bottom: 0;
-    width: 260px !important;
-    flex: 0 0 260px !important;
+    width: 280px !important;
+    flex: 0 0 0px !important;
+    min-width: 0 !important;
+    max-width: 280px !important;
     z-index: 1000;
     box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -520,8 +526,10 @@
 
   .main-layout-sidebar.is-collapsed {
     transform: translateX(-100%);
-    width: 260px !important;
-    flex: 0 0 260px !important;
+    width: 0 !important;
+    flex: 0 0 0px !important;
+    min-width: 0 !important;
+    box-shadow: none;
   }
 
   /* When expanded on mobile/tablet screen, reveal titles and sublabels in full drawer mode */
@@ -548,11 +556,15 @@
 
   .main-layout-body {
     width: 100%;
+    max-width: 100vw;
     min-width: 0;
+    flex: 1;
   }
 
   .main-layout-content {
-    padding: 20px 16px;
+    padding: 16px 12px;
+    width: 100%;
+    box-sizing: border-box;
   }
 }
 
@@ -563,7 +575,9 @@
 
 @media (max-width: 640px) {
   .main-layout-content {
-    padding: 16px 12px;
+    padding: 12px 8px;
+    width: 100%;
+    box-sizing: border-box;
   }
 }
 
