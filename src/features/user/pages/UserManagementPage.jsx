@@ -159,7 +159,7 @@ function UserManagementPage() {
                       )}
                     </td>
                     <td>
-                      <strong style={{ color: '#f8fafc' }}>{user.name}</strong>
+                      <span style={{ color: '#f8fafc', fontWeight: 400 }}>{user.name}</span>
                     </td>
                     <td>{user.userMail}</td>
                     <td>{user.mobileNo}</td>
