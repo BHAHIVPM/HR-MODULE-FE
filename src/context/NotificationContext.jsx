@@ -92,7 +92,18 @@ export function NotificationProvider({ children }) {
             formattedError.details = resData.responseOutput;
           }
         } else if (typeof resData === 'string' && resData.trim().length > 0) {
-          formattedError.message = resData;
+          if (resData.includes('<html') || resData.includes('<!DOCTYPE')) {
+            const titleMatch = resData.match(/<title>(.*?)<\/title>/i);
+            if (titleMatch && titleMatch[1]) {
+              formattedError.title = titleMatch[1].trim();
+            } else {
+              formattedError.title = `Error ${errorInput.response.status}`;
+            }
+            formattedError.message = `The server returned an HTML error page (${errorInput.response.status} ${errorInput.response.statusText || 'Not Found'}).`;
+            formattedError.details = resData;
+          } else {
+            formattedError.message = resData;
+          }
         } else {
           formattedError.message = errorInput.message || 'Request failed with status ' + errorInput.response.status;
         }

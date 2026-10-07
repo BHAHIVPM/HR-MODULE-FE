@@ -224,38 +224,91 @@
 }
 
 /* ============ RESPONSIVE ============ */
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .user-page-container {
-    padding: 16px 12px;
-    gap: 16px;
+    padding: 14px 12px;
+    gap: 12px;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .user-page-header {
-    flex-direction: column;
-    align-items: stretch;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .user-page-title-group h1 {
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  .user-page-title-group p {
+    font-size: 12.5px;
+    margin-top: 2px;
   }
 
   .btn-add-user {
-    justify-content: center;
+    padding: 8px 14px;
+    font-size: 13px;
+    border-radius: 8px;
+    flex-shrink: 0;
   }
 
   .user-table-card {
-    padding: 14px;
+    padding: 14px 12px;
+    border-radius: 10px;
+    width: 100%;
+    box-sizing: border-box;
   }
 
-  .user-table th,
+  .user-table-header {
+    margin-bottom: 12px;
+  }
+
+  .user-table-header .title {
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .user-table-header .count-badge {
+    font-size: 11px;
+    padding: 3px 8px;
+  }
+
+  .user-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    display: block;
+  }
+
+  .user-table {
+    min-width: 640px;
+  }
+
+  .user-table th {
+    padding: 8px 10px;
+    font-size: 11.5px;
+    white-space: nowrap;
+  }
+
   .user-table td {
-    padding: 10px 12px;
+    padding: 8px 10px;
     font-size: 13px;
+    white-space: nowrap;
+    font-weight: 400;
   }
 
   .user-actions {
-    flex-direction: column;
+    flex-direction: row;
     gap: 6px;
   }
 
   .user-actions .btn-user-action {
-    width: 100%;
+    padding: 5px 10px;
+    font-size: 12px;
   }
 
   /* Keep the edit modal fully visible on small/short screens */
@@ -268,15 +321,17 @@
   .edit-user-modal-content {
     width: 100%;
     margin: auto 0;
+    padding: 20px;
   }
 
   .modal-actions {
-    flex-direction: column-reverse;
+    flex-direction: row;
+    gap: 8px;
   }
 
   .modal-actions .btn-user-action,
   .modal-actions .btn-add-user {
-    width: 100%;
+    flex: 1;
     justify-content: center;
   }
 }
