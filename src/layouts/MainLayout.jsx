@@ -578,9 +578,140 @@ function MainLayout() {
         </main>
       </div>
 
+      <MobileNavSheet
+        isOpen={!isCollapsed}
+        onClose={() => setIsCollapsed(true)}
+        menu={effectiveMenu}
+        location={location}
+        navigate={navigate}
+        isDeveloperUser={isDeveloperUser}
+      />
+
       {showWarning && (
         <SessionWarningModal onStay={extendSession} onLogout={forceLogout} />
       )}
+    </div>
+  );
+}
+
+function MobileNavSheet({ isOpen, onClose, menu, location, navigate, isDeveloperUser }) {
+  const [searchTerm, setSearchTerm] = useState('');
+
+  if (!isOpen) return null;
+
+  const items = [];
+  const sourceMenu = Array.isArray(menu) ? menu : [];
+
+  sourceMenu.forEach((mainGroup) => {
+    const mgName = mainGroup.mainGroupName || 'Menu';
+    const subGroups = Array.isArray(mainGroup.subGroup) ? mainGroup.subGroup : [];
+    subGroups.forEach((subGroup) => {
+      const subItems = Array.isArray(subGroup.subItems) ? subGroup.subItems : [];
+      subItems.forEach((item) => {
+        if (item.canView !== false && item.componentPath) {
+          items.push({
+            group: mgName,
+            label: item.menuName,
+            path: item.componentPath,
+            canAdd: item.canAdd !== false,
+          });
+        }
+      });
+    });
+  });
+
+  const displayItems = items.length > 0 ? items : NAV_ITEMS.map((i) => ({
+    group: 'General',
+    label: i.label,
+    path: i.listPath,
+    canAdd: !!i.formPath,
+  }));
+
+  const filteredItems = displayItems.filter(
+    (item) =>
+      item.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.group.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  return (
+    <div className="mobile-nav-overlay" onClick={onClose}>
+      <div className="mobile-nav-sheet" onClick={(e) => e.stopPropagation()}>
+        <div className="mobile-sheet-drag-handle" />
+        <div className="mobile-sheet-header">
+          <div className="mobile-sheet-profile">
+            <div className="mobile-sheet-avatar">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+            </div>
+            <div className="mobile-sheet-user-text">
+              <span className="mobile-sheet-user-name">HR Navigation</span>
+              <span className="mobile-sheet-user-role">{isDeveloperUser ? 'Developer' : 'Portal'} Workspace</span>
+            </div>
+          </div>
+          <button type="button" className="mobile-sheet-close-btn" onClick={onClose} aria-label="Close navigation sheet">
+            &times;
+          </button>
+        </div>
+
+        <div className="mobile-sheet-search">
+          <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" className="search-icon">
+            <circle cx="9" cy="9" r="6" />
+            <path d="M13.5 13.5L17 17" />
+          </svg>
+          <input
+            type="text"
+            placeholder="Search modules & pages..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          {searchTerm && (
+            <button type="button" className="clear-search" onClick={() => setSearchTerm('')}>
+              &times;
+            </button>
+          )}
+        </div>
+
+        <div className="mobile-sheet-grid">
+          {filteredItems.map((item) => {
+            const isActive = location.pathname === item.path.split('?')[0];
+            const addPath = resolveAddPath(item.path);
+            return (
+              <div
+                key={item.path + item.label}
+                className={`mobile-sheet-card ${isActive ? 'active' : ''}`}
+                onClick={() => {
+                  navigate(item.path);
+                  onClose();
+                }}
+              >
+                <div className="mobile-card-icon">
+                  <MenuIcon />
+                </div>
+                <div className="mobile-card-info">
+                  <span className="mobile-card-title">{item.label}</span>
+                  <span className="mobile-card-group">{item.group}</span>
+                </div>
+                {item.canAdd && addPath && (
+                  <button
+                    type="button"
+                    className="mobile-card-add-btn"
+                    title={`Add ${item.label}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(addPath);
+                      onClose();
+                    }}
+                  >
+                    + Add
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }

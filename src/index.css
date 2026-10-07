@@ -205,3 +205,53 @@ code {
   background: rgba(148, 163, 184, 0.4);
   border-radius: 3px;
 }
+
+/* ============ CRISP HIGH-DENSITY MOBILE TYPOGRAPHY & SPACING ============ */
+@media (max-width: 768px) {
+  html {
+    font-size: 13px;
+  }
+
+  h1, .page-title, .dashboard-welcome-title {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.01em !important;
+    line-height: 1.25 !important;
+    margin-bottom: 2px !important;
+  }
+
+  h2, h3, .card-title, .section-title {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.01em !important;
+    margin-bottom: 4px !important;
+  }
+
+  p, .subtitle, .description {
+    font-size: 12px !important;
+    line-height: 1.35 !important;
+  }
+
+  .card, .table-card, .user-table-card, .dashboard-card, .stat-card {
+    padding: 12px 10px !important;
+    border-radius: 8px !important;
+  }
+
+  /* Compact button padding */
+  .btn, button:not(.header-menu-mode-btn):not(.icon-btn):not(.mobile-sheet-close-btn):not(.header-menu-trigger) {
+    padding: 6px 12px !important;
+    font-size: 12.5px !important;
+    border-radius: 6px !important;
+  }
+
+  /* Compact table padding */
+  th {
+    padding: 8px 8px !important;
+    font-size: 11px !important;
+  }
+
+  td {
+    padding: 8px 8px !important;
+    font-size: 12px !important;
+  }
+}
