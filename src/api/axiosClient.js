@@ -76,16 +76,39 @@ const dispatchApiSuccess = ({ header, message }) => {
 const dispatchHttpError = (err) => {
   if (!err?.response) return;
   const resData = err.response.data;
+  const status = err.response.status;
   const hasEnvelopeShape = resData && typeof resData === 'object' && (resData.header || resData.message);
+  
+  let title = (hasEnvelopeShape && resData.header) || (resData && resData.error) || `Error ${status}`;
+  let message = 'The request failed. Please try again.';
+  let details = null;
+
+  if (hasEnvelopeShape) {
+    message = resData.message || message;
+  } else if (typeof resData === 'string' && resData.trim().length > 0) {
+    if (resData.includes('<html') || resData.includes('<!DOCTYPE')) {
+      const titleMatch = resData.match(/<title>(.*?)<\/title>/i);
+      if (titleMatch && titleMatch[1]) {
+        title = titleMatch[1].trim();
+      }
+      message = `The server returned an HTML error page (${status} ${err.response.statusText || 'Not Found'}).`;
+      details = resData;
+    } else {
+      message = resData;
+    }
+  } else if (err.message) {
+    message = err.message;
+  }
+
+  if (resData && typeof resData === 'object' && !hasEnvelopeShape) {
+    details = resData;
+  }
+
   dispatchApiError({
-    title: (hasEnvelopeShape && resData.header) || (resData && resData.error) || `Error ${err.response.status}`,
-    message:
-      (hasEnvelopeShape && resData.message) ||
-      (typeof resData === 'string' && resData) ||
-      err.message ||
-      'The request failed. Please try again.',
-    statusCode: err.response.status,
-    details: resData && typeof resData === 'object' && !hasEnvelopeShape ? resData : null,
+    title,
+    message,
+    statusCode: status,
+    details,
   });
 };
 

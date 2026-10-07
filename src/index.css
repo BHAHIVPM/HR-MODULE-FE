@@ -144,32 +144,66 @@ code {
 
 /* Global Responsive Table Utilities */
 .table-responsive,
-.user-table-wrapper {
+.user-table-wrapper,
+.data-table-container,
+.ra-table-wrap,
+.menu-table-wrapper,
+.employee-table-wrapper,
+.payroll-table-wrapper,
+.leave-table-wrapper,
+.holiday-table-wrapper,
+.asset-table-wrapper,
+.document-table-wrapper,
+.performance-table-wrapper,
+.client-table-wrapper,
+.org-table-wrapper {
   width: 100%;
+  max-width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   border-radius: 8px;
   margin-bottom: 4px;
+  display: block;
 }
 
 .table-responsive table,
-.user-table-wrapper table {
+.user-table-wrapper table,
+.data-table-container table,
+.ra-table-wrap table,
+.menu-table-wrapper table,
+.employee-table-wrapper table,
+.payroll-table-wrapper table,
+.leave-table-wrapper table,
+.holiday-table-wrapper table,
+.asset-table-wrapper table,
+.document-table-wrapper table,
+.performance-table-wrapper table,
+.client-table-wrapper table,
+.org-table-wrapper table {
   min-width: 680px;
 }
 
 .table-responsive::-webkit-scrollbar,
-.user-table-wrapper::-webkit-scrollbar {
+.user-table-wrapper::-webkit-scrollbar,
+.data-table-container::-webkit-scrollbar,
+.ra-table-wrap::-webkit-scrollbar {
   height: 6px;
 }
 
 .table-responsive::-webkit-scrollbar-track,
-.user-table-wrapper::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.05);
+.user-table-wrapper::-webkit-scrollbar-track,
+.data-table-container::-webkit-scrollbar-track,
+.ra-table-wrap::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
   border-radius: 3px;
 }
 
 .table-responsive::-webkit-scrollbar-thumb,
-.user-table-wrapper::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.18);
+.user-table-wrapper::-webkit-scrollbar-thumb,
+.data-table-container::-webkit-scrollbar-thumb,
+.ra-table-wrap::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
   border-radius: 3px;
 }
+
+

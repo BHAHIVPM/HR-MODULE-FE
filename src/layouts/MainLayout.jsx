@@ -470,15 +470,30 @@ function MainLayout() {
   }, []);
 
   const [isCollapsed, setIsCollapsed] = useState(() => {
+    if (typeof window !== 'undefined' && window.innerWidth <= 1024) {
+      return true;
+    }
     const saved = localStorage.getItem('hr_sidebar_collapsed');
     if (saved !== null) return JSON.parse(saved);
-    return window.innerWidth <= 1024;
+    return false;
   });
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth <= 1024) {
+        setIsCollapsed(true);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const toggleSidebar = () => {
     setIsCollapsed((prev) => {
       const next = !prev;
-      localStorage.setItem('hr_sidebar_collapsed', JSON.stringify(next));
+      if (window.innerWidth > 1024) {
+        localStorage.setItem('hr_sidebar_collapsed', JSON.stringify(next));
+      }
       return next;
     });
   };
