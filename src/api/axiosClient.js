@@ -1,12 +1,10 @@
 import axios from 'axios';
 
-const getDefaultBaseUrl = () => {
-  // if (typeof window !== 'undefined' && window.location && window.location.hostname) {
-  //   const protocol = window.location.protocol || 'http:';
-  //   return `${protocol}//${window.location.hostname}:8080`;
-  // }
-  return 'https://hr-module-o0ex.onrender.com';
-};
+// In production (Netlify) the browser talks only to its own origin at /api.
+// Netlify's _redirects file proxies /api/* to the Render backend, so cookies
+// are first-party. For local dev, set REACT_APP_API_URL=http://localhost:8080
+// in .env.development to call the backend directly.
+const getDefaultBaseUrl = () => '/api';
 
 const API_BASE_URL = (process.env.REACT_APP_API_URL || getDefaultBaseUrl()).replace(/\/+$/, '');
 
@@ -78,7 +76,7 @@ const dispatchHttpError = (err) => {
   const resData = err.response.data;
   const status = err.response.status;
   const hasEnvelopeShape = resData && typeof resData === 'object' && (resData.header || resData.message);
-  
+
   let title = (hasEnvelopeShape && resData.header) || (resData && resData.error) || `Error ${status}`;
   let message = 'The request failed. Please try again.';
   let details = null;
