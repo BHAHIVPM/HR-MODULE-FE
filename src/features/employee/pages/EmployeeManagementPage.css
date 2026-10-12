@@ -53,13 +53,13 @@
 }
 
 .btn-toggle-form.primary {
-  background: #2563eb;
+  background: var(--color-primary, var(--primary-color, #2f5dd1));
   color: #ffffff;
-  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.25);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 .btn-toggle-form.primary:hover {
-  background: #1d4ed8;
+  background: var(--primary-700, #24469e);
 }
 
 .btn-toggle-form.secondary {

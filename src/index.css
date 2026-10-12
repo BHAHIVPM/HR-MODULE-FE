@@ -6,6 +6,11 @@
   --color-secondary: #c9a24b;
   --color-third: #0b1220;
 
+  /* Primary key color aliases for universal component compatibility */
+  --primary-color: var(--color-primary);
+  --secondary-color: var(--color-secondary);
+  --third-color: var(--color-third);
+
   /* Derived from core colors (overridden at runtime by ThemeProvider) */
   --ink-900: var(--color-third);
   --ink-800: #121a2c;
@@ -140,6 +145,32 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+/* Global Theme-aware Button Utilities */
+.btn-primary,
+.btn-primary-action,
+.btn-add-user {
+  background-color: var(--color-primary, var(--primary-color, #2f5dd1));
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease, opacity 0.2s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-primary:hover,
+.btn-primary-action:hover,
+.btn-add-user:hover {
+  background-color: var(--primary-700, #24469e);
+  color: #ffffff;
+}
+
+.btn-primary:disabled,
+.btn-primary-action:disabled,
+.btn-add-user:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* Global Responsive Table Utilities */

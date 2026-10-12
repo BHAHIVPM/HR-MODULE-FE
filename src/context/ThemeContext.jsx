@@ -48,6 +48,11 @@ function applyThemeToDOM(colors, resolvedMode) {
   root.style.setProperty('--color-secondary', colors.secondary);
   root.style.setProperty('--color-third', colors.third);
 
+  // Map primary key color aliases for universal component & module compatibility
+  root.style.setProperty('--primary-color', colors.primary);
+  root.style.setProperty('--secondary-color', colors.secondary);
+  root.style.setProperty('--third-color', colors.third);
+
   const primaryShades = deriveShades(colors.primary);
   const secondaryShades = deriveShades(colors.secondary);
   const thirdShades = deriveShades(colors.third);

@@ -36,12 +36,12 @@
 }
 
 .tab-btn:hover {
-  color: var(--color-primary, #3b82f6);
+  color: var(--color-primary, var(--primary-color, #2f5dd1));
 }
 
 .tab-btn-active {
-  color: var(--color-primary, #3b82f6);
-  border-bottom-color: var(--color-primary, #3b82f6);
+  color: var(--color-primary, var(--primary-color, #2f5dd1));
+  border-bottom-color: var(--color-primary, var(--primary-color, #2f5dd1));
   font-weight: 500;
 }
 
@@ -134,7 +134,7 @@
 
 .btn-primary-action {
   padding: 8px 16px;
-  background-color: var(--color-primary, #3b82f6);
+  background-color: var(--color-primary, var(--primary-color, #2f5dd1));
   color: #ffffff;
   border: none;
   border-radius: 6px;
@@ -145,7 +145,8 @@
 }
 
 .btn-primary-action:hover {
-  opacity: 0.9;
+  background-color: var(--primary-700, #24469e);
+  opacity: 0.95;
 }
 
 .btn-secondary {
@@ -179,7 +180,7 @@
 }
 
 .btn-edit {
-  color: var(--color-primary, #3b82f6);
+  color: var(--color-primary, var(--primary-color, #2f5dd1));
 }
 
 .btn-delete {
@@ -238,7 +239,7 @@
 .form-group input[type="text"]:focus,
 .form-group select:focus {
   outline: none;
-  border-color: var(--color-primary, #3b82f6);
+  border-color: var(--color-primary, var(--primary-color, #2f5dd1));
 }
 
 .form-row {

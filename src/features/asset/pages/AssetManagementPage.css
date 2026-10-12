@@ -35,7 +35,7 @@
 .badge-RETIRED { background: #e2e8f0; color: #334155; }
 
 .btn-issue {
-  background: #2563eb;
+  background: var(--color-primary, var(--primary-color, #2f5dd1));
   color: white;
   border: none;
   padding: 4px 10px;

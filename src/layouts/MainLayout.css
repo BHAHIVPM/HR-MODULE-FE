@@ -203,15 +203,15 @@
 }
 
 .sidebar-add-btn:hover {
-  background: var(--primary-color, #3b82f6);
-  border-color: var(--primary-color, #3b82f6);
+  background: var(--color-primary, var(--primary-color, #2f5dd1));
+  border-color: var(--color-primary, var(--primary-color, #2f5dd1));
   color: #ffffff;
   transform: scale(1.1);
 }
 
 .sidebar-add-btn-active {
-  background: var(--primary-color, #3b82f6);
-  border-color: var(--primary-color, #3b82f6);
+  background: var(--color-primary, var(--primary-color, #2f5dd1));
+  border-color: var(--color-primary, var(--primary-color, #2f5dd1));
   color: #ffffff;
 }
 
