@@ -30,7 +30,7 @@
   padding: 10px 22px;
   border-radius: 8px;
   background: var(--primary-600);
-  color: #ffffff;
+  color: var(--color-primary-contrast, #ffffff);
   font-size: 14px;
   font-weight: 600;
   text-decoration: none;
@@ -38,6 +38,7 @@
 
 .registration-back-link:hover {
   background: var(--primary-700);
+  color: var(--primary-700-contrast, var(--color-primary-contrast, #ffffff));
 }
 
 .registration-lookup-hint {

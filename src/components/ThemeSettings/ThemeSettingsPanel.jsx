@@ -38,9 +38,15 @@ function ThemeSettingsPanel() {
         </div>
 
         <div className="theme-settings-preview">
-          <div className="theme-preview-swatch" style={{ background: colors.primary }} />
-          <div className="theme-preview-swatch" style={{ background: colors.secondary }} />
-          <div className="theme-preview-swatch" style={{ background: colors.third }} />
+          <div className="theme-preview-swatch" style={{ background: colors.primary, color: 'var(--color-primary-contrast)' }}>
+            <span>Primary</span>
+          </div>
+          <div className="theme-preview-swatch" style={{ background: colors.secondary, color: 'var(--color-secondary-contrast)' }}>
+            <span>Secondary</span>
+          </div>
+          <div className="theme-preview-swatch" style={{ background: colors.third, color: 'var(--color-third-contrast)' }}>
+            <span>Third</span>
+          </div>
         </div>
 
         <div className="theme-settings-fields">

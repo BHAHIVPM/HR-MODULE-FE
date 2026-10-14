@@ -44,10 +44,11 @@
 
 .ra-btn-primary {
   background: var(--color-primary, var(--primary-color, #2f5dd1));
-  color: #fff;
+  color: var(--color-primary-contrast, #fff);
 }
 .ra-btn-primary:hover {
   background: var(--primary-700, #24469e);
+  color: var(--primary-700-contrast, var(--color-primary-contrast, #fff));
   filter: brightness(1.05);
   transform: translateY(-1px);
 }

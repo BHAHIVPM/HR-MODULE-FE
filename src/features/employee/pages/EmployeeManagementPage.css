@@ -54,12 +54,13 @@
 
 .btn-toggle-form.primary {
   background: var(--color-primary, var(--primary-color, #2f5dd1));
-  color: #ffffff;
+  color: var(--color-primary-contrast, #ffffff);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 .btn-toggle-form.primary:hover {
   background: var(--primary-700, #24469e);
+  color: var(--primary-700-contrast, var(--color-primary-contrast, #ffffff));
 }
 
 .btn-toggle-form.secondary {

@@ -189,7 +189,7 @@
 
 .header-menu-item-primary:hover {
   background: var(--primary-600);
-  color: var(--white);
+  color: var(--color-primary-contrast, var(--white));
 }
 
 .header-menu-item-danger {

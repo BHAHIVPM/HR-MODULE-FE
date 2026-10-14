@@ -168,7 +168,7 @@
   padding: 9px 22px;
   font-size: 14px;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--color-primary-contrast, #ffffff);
   background: var(--color-primary, var(--primary-color, #2f5dd1));
   border: 1px solid var(--primary-700, #24469e);
   border-radius: 6px;

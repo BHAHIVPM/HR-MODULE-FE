@@ -1,4 +1,13 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import {
+  getContrastColor,
+  getContrastMuted,
+  getContrastBorder,
+  getContrastSubtle,
+  isBrightColor,
+  getLuminance,
+  initAutoContrastWatcher,
+} from '../utils/colorContrast';
 
 const DEFAULT_THEME = {
   primary: '#2f5dd1',
@@ -67,6 +76,49 @@ function applyThemeToDOM(colors, resolvedMode) {
   root.style.setProperty('--ink-900', colors.third);
   root.style.setProperty('--ink-800', thirdShades.light);
   root.style.setProperty('--ink-700', deriveShades(colors.third).light);
+
+  // Dynamic Background-Contrast Text & Foreground Colors
+  // Dynamically calculated using WCAG relative luminance (pure black vs crisp white)
+  const primaryContrast = getContrastColor(colors.primary);
+  const primaryContrastMuted = getContrastMuted(colors.primary);
+  const primaryDarkContrast = getContrastColor(primaryShades.dark);
+  const primaryLightContrast = getContrastColor(primaryShades.light);
+
+  const secondaryContrast = getContrastColor(colors.secondary);
+  const secondaryContrastMuted = getContrastMuted(colors.secondary);
+
+  const thirdContrast = getContrastColor(colors.third);
+  const thirdContrastMuted = getContrastMuted(colors.third);
+  const thirdContrastBorder = getContrastBorder(colors.third);
+  const thirdContrastSubtle = getContrastSubtle(colors.third);
+
+  // Primary background contrast tokens
+  root.style.setProperty('--color-primary-contrast', primaryContrast);
+  root.style.setProperty('--primary-contrast', primaryContrast);
+  root.style.setProperty('--color-primary-contrast-muted', primaryContrastMuted);
+  root.style.setProperty('--primary-700-contrast', primaryDarkContrast);
+  root.style.setProperty('--primary-100-contrast', primaryLightContrast);
+
+  // Secondary background contrast tokens
+  root.style.setProperty('--color-secondary-contrast', secondaryContrast);
+  root.style.setProperty('--secondary-contrast', secondaryContrast);
+  root.style.setProperty('--color-secondary-contrast-muted', secondaryContrastMuted);
+
+  // Third (dark surface / sidebar) background contrast tokens
+  root.style.setProperty('--color-third-contrast', thirdContrast);
+  root.style.setProperty('--third-contrast', thirdContrast);
+  root.style.setProperty('--color-third-contrast-muted', thirdContrastMuted);
+  root.style.setProperty('--color-third-contrast-border', thirdContrastBorder);
+  root.style.setProperty('--color-third-contrast-subtle', thirdContrastSubtle);
+  root.style.setProperty('--ink-900-contrast', thirdContrast);
+
+  // Semantic surfaces contrast tokens
+  const surfaceBg = resolvedMode === 'dark' ? '#0a0f18' : '#f8fafc';
+  const surfaceCard = resolvedMode === 'dark' ? '#121a2c' : '#ffffff';
+  root.style.setProperty('--surface-bg-contrast', getContrastColor(surfaceBg));
+  root.style.setProperty('--surface-card-contrast', getContrastColor(surfaceCard));
+  root.style.setProperty('--surface-panel-contrast', getContrastColor(surfaceCard));
+  root.style.setProperty('--surface-muted-contrast', getContrastColor(resolvedMode === 'dark' ? '#1a2234' : '#f2f4f7'));
 }
 
 const ThemeContext = createContext();
@@ -114,6 +166,12 @@ export function ThemeProvider({ children }) {
     localStorage.setItem(MODE_STORAGE_KEY, colorMode);
   }, [colorMode]);
 
+  // Initialize auto-contrast watcher for generic DOM elements with [data-auto-contrast]
+  useEffect(() => {
+    const cleanup = initAutoContrastWatcher();
+    return cleanup;
+  }, []);
+
   const updateColor = useCallback((key, value) => {
     setColors((prev) => ({ ...prev, [key]: value }));
   }, []);
@@ -144,6 +202,9 @@ export function ThemeProvider({ children }) {
         systemPreference,
         showSettings,
         setShowSettings,
+        getContrastColor,
+        isBrightColor,
+        getLuminance,
       }}
     >
       {children}
@@ -152,3 +213,4 @@ export function ThemeProvider({ children }) {
 }
 
 export const useTheme = () => useContext(ThemeContext);
+

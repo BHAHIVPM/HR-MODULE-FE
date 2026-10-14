@@ -36,7 +36,7 @@
 
 .btn-issue {
   background: var(--color-primary, var(--primary-color, #2f5dd1));
-  color: white;
+  color: var(--color-primary-contrast, white);
   border: none;
   padding: 4px 10px;
   border-radius: 6px;

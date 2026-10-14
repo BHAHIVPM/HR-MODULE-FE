@@ -153,7 +153,7 @@ function UserRegistrationPage() {
                   padding: '4px 10px',
                   borderRadius: '4px',
                   backgroundColor: copied ? '#10b981' : 'var(--color-primary, var(--primary-color, #2f5dd1))',
-                  color: '#fff',
+                  color: copied ? '#fff' : 'var(--color-primary-contrast, #fff)',
                   border: 'none',
                   cursor: 'pointer',
                   fontSize: '12px',

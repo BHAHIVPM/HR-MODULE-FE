@@ -170,7 +170,7 @@ function EmployeeManagementPage() {
             onClick={() => handleToggleViewMode('active')}
             style={{
               backgroundColor: viewMode === 'active' ? 'var(--color-primary, var(--primary-color, #2f5dd1))' : 'transparent',
-              color: '#fff',
+              color: viewMode === 'active' ? 'var(--color-primary-contrast, #fff)' : 'var(--text-primary)',
               border: '1px solid var(--color-primary, var(--primary-color, #2f5dd1))',
               padding: '6px 14px',
               borderRadius: '6px',
@@ -186,7 +186,7 @@ function EmployeeManagementPage() {
             onClick={() => handleToggleViewMode('all')}
             style={{
               backgroundColor: viewMode === 'all' ? 'var(--color-primary, var(--primary-color, #2f5dd1))' : 'transparent',
-              color: '#fff',
+              color: viewMode === 'all' ? 'var(--color-primary-contrast, #fff)' : 'var(--text-primary)',
               border: '1px solid var(--color-primary, var(--primary-color, #2f5dd1))',
               padding: '6px 14px',
               borderRadius: '6px',
