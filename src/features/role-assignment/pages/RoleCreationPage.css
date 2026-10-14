@@ -43,10 +43,15 @@
 }
 
 .ra-btn-primary {
-  background: var(--primary-color, #3b82f6);
-  color: #fff;
+  background: var(--color-primary, var(--primary-color, #2f5dd1));
+  color: var(--color-primary-contrast, #fff);
 }
-.ra-btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.ra-btn-primary:hover {
+  background: var(--primary-700, #24469e);
+  color: var(--primary-700-contrast, var(--color-primary-contrast, #fff));
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
 .ra-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
 .ra-btn-secondary {

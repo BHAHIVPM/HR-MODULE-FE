@@ -6,6 +6,11 @@
   --color-secondary: #c9a24b;
   --color-third: #0b1220;
 
+  /* Primary key color aliases for universal component compatibility */
+  --primary-color: var(--color-primary);
+  --secondary-color: var(--color-secondary);
+  --third-color: var(--color-third);
+
   /* Derived from core colors (overridden at runtime by ThemeProvider) */
   --ink-900: var(--color-third);
   --ink-800: #121a2c;
@@ -62,6 +67,29 @@
   --success-text: #027a48;
   --success-500: #12b76a;
 
+  /* Dynamic Background-Contrast Tokens (Overridden dynamically at runtime by ThemeProvider) */
+  --color-primary-contrast: #ffffff;
+  --primary-contrast: var(--color-primary-contrast);
+  --color-primary-contrast-muted: rgba(255, 255, 255, 0.75);
+  --primary-700-contrast: #ffffff;
+  --primary-100-contrast: #101828;
+
+  --color-secondary-contrast: #101828;
+  --secondary-contrast: var(--color-secondary-contrast);
+  --color-secondary-contrast-muted: rgba(16, 24, 40, 0.75);
+
+  --color-third-contrast: #ffffff;
+  --third-contrast: var(--color-third-contrast);
+  --color-third-contrast-muted: rgba(255, 255, 255, 0.72);
+  --color-third-contrast-border: rgba(255, 255, 255, 0.12);
+  --color-third-contrast-subtle: rgba(255, 255, 255, 0.45);
+  --ink-900-contrast: var(--color-third-contrast);
+
+  --surface-bg-contrast: #101828;
+  --surface-card-contrast: #101828;
+  --surface-panel-contrast: #101828;
+  --surface-muted-contrast: #101828;
+
   /* Type */
   --font-display: 'Sora', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
@@ -97,6 +125,11 @@
   --text-secondary: #98a2b3;
   --text-muted: #667085;
   --text-inverse: #ffffff;
+
+  --surface-bg-contrast: #f0f4f8;
+  --surface-card-contrast: #f0f4f8;
+  --surface-panel-contrast: #f0f4f8;
+  --surface-muted-contrast: #f0f4f8;
 
   --border-default: rgba(255, 255, 255, 0.1);
   --border-subtle: rgba(255, 255, 255, 0.06);
@@ -140,6 +173,71 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+/* Global Theme-aware Dynamic Contrast Button Utilities */
+.btn-primary,
+.btn-primary-action,
+.btn-add-user {
+  background-color: var(--color-primary, var(--primary-color, #2f5dd1));
+  color: var(--color-primary-contrast, #ffffff);
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, opacity 0.2s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-primary:hover,
+.btn-primary-action:hover,
+.btn-add-user:hover {
+  background-color: var(--primary-700, #24469e);
+  color: var(--primary-700-contrast, var(--color-primary-contrast, #ffffff));
+}
+
+.btn-primary:disabled,
+.btn-primary-action:disabled,
+.btn-add-user:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Universal Dynamic Contrast Utility Classes */
+.bg-dynamic-primary {
+  background-color: var(--color-primary, #2f5dd1) !important;
+  color: var(--color-primary-contrast, #ffffff) !important;
+}
+
+.bg-dynamic-secondary {
+  background-color: var(--color-secondary, #c9a24b) !important;
+  color: var(--color-secondary-contrast, #101828) !important;
+}
+
+.bg-dynamic-third {
+  background-color: var(--color-third, #0b1220) !important;
+  color: var(--color-third-contrast, #ffffff) !important;
+}
+
+/* Universal auto-contrast helper for arbitrary elements */
+.auto-contrast,
+[data-auto-contrast] {
+  color: var(--auto-contrast-color, inherit);
+}
+
+/* Modern Browser CSS Dynamic Contrast Progressive Enhancements */
+@supports (color: oklch(from red l c h)) {
+  .auto-contrast[style*='background-color'],
+  [data-auto-contrast][style*='background-color'] {
+    --threshold: 0.623;
+    --l: max(0, sign(var(--threshold) - l));
+    color: oklch(from var(--bg-current, currentColor) var(--l) 0 h);
+  }
+}
+
+@supports (color: contrast-color(red)) {
+  .auto-contrast[style*='background-color'],
+  [data-auto-contrast][style*='background-color'] {
+    color: contrast-color(var(--bg-current, currentColor));
+  }
 }
 
 /* Global Responsive Table Utilities */

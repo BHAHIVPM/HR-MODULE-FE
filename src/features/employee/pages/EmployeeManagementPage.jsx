@@ -169,9 +169,9 @@ function EmployeeManagementPage() {
             className={`btn-filter-action ${viewMode === 'active' ? 'active' : ''}`}
             onClick={() => handleToggleViewMode('active')}
             style={{
-              backgroundColor: viewMode === 'active' ? '#3b82f6' : 'transparent',
-              color: '#fff',
-              border: '1px solid #3b82f6',
+              backgroundColor: viewMode === 'active' ? 'var(--color-primary, var(--primary-color, #2f5dd1))' : 'transparent',
+              color: viewMode === 'active' ? 'var(--color-primary-contrast, #fff)' : 'var(--text-primary)',
+              border: '1px solid var(--color-primary, var(--primary-color, #2f5dd1))',
               padding: '6px 14px',
               borderRadius: '6px',
               cursor: 'pointer',
@@ -185,9 +185,9 @@ function EmployeeManagementPage() {
             className={`btn-filter-action ${viewMode === 'all' ? 'active' : ''}`}
             onClick={() => handleToggleViewMode('all')}
             style={{
-              backgroundColor: viewMode === 'all' ? '#3b82f6' : 'transparent',
-              color: '#fff',
-              border: '1px solid #3b82f6',
+              backgroundColor: viewMode === 'all' ? 'var(--color-primary, var(--primary-color, #2f5dd1))' : 'transparent',
+              color: viewMode === 'all' ? 'var(--color-primary-contrast, #fff)' : 'var(--text-primary)',
+              border: '1px solid var(--color-primary, var(--primary-color, #2f5dd1))',
               padding: '6px 14px',
               borderRadius: '6px',
               cursor: 'pointer',

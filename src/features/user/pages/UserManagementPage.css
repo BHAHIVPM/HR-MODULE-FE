@@ -32,8 +32,8 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background-color: var(--primary-color, #3b82f6);
-  color: #ffffff;
+  background-color: var(--color-primary, var(--primary-color, #2f5dd1));
+  color: var(--color-primary-contrast, #ffffff);
   border: none;
   padding: 10px 18px;
   border-radius: 8px;
@@ -45,7 +45,8 @@
 }
 
 .btn-add-user:hover {
-  filter: brightness(1.1);
+  background-color: var(--primary-700, #24469e);
+  filter: brightness(1.05);
   transform: translateY(-1px);
 }
 
@@ -72,8 +73,8 @@
 }
 
 .user-table-header .count-badge {
-  background: rgba(59, 130, 246, 0.15);
-  color: #60a5fa;
+  background: var(--primary-100, rgba(47, 93, 209, 0.15));
+  color: var(--color-primary, var(--primary-color, #2f5dd1));
   padding: 4px 10px;
   border-radius: 20px;
   font-size: 12px;
